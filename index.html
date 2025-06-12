@@ -334,6 +334,7 @@
     width: 100%;
     font-size: 0.85rem;
     color: var(--color-text-secondary);
+    font-variant-numeric: tabular-nums;
   }
 
   input[type="range"] {
@@ -533,6 +534,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   animation: spin 4s linear infinite;
   animation-play-state: paused;
+  aspect-ratio: 1/1;
 }
 
 @keyframes spin {
@@ -640,7 +642,8 @@ body::before{
 }
 
 #welcome-logo {
-  width: 120px;
+  width: 200px;
+  max-width: 80vw;
   opacity: 0;
   transform: translateY(20px);
   animation: logo-pop 1s ease-out forwards;
@@ -704,6 +707,18 @@ body::before{
   color: var(--color-accent-primary);
   animation: fade-in 0.8s ease-out;
   transition: opacity 1s ease-out;
+}
+
+.playlist-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.playlist-artist {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.2rem;
 }
 
 </style>
@@ -799,6 +814,9 @@ body::before{
   const nextBtn = document.getElementById('next-btn');
   const seekSlider = document.getElementById('seek-slider');
   const volumeSlider = document.getElementById('volume-slider');
+  audioEl.volume = 0.4;
+  volumeSlider.value = 40;
+
   const currentTimeEl = document.getElementById('current-time');
   const totalTimeEl = document.getElementById('total-time');
   const searchInput = document.getElementById('search-input');
@@ -816,55 +834,90 @@ body::before{
   }
 
   async function fetchSongsFromAllRepos() {
-    songs = [];
-    playlistEl.innerHTML = '<li>Cargando canciones...</li>';
+  songs = [];
+  playlistEl.innerHTML = '<li>Cargando canciones...</li>';
 
-    for (const repo of repos) {
-      try {
-        const res = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/?ref=${branch}`);
-        const data = await res.json();
+  for (const repo of repos) {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/?ref=${branch}`);
+      const data = await res.json();
 
-        if (Array.isArray(data)) {
-          const mp3s = data
-            .filter(item => item.type === 'file' && item.name.endsWith('.mp3'))
-            .map(item => ({
-              title: item.name.replace('.mp3', ''),
-              artist: defaultArtist,
-              albumArt: defaultAlbumArt, // Se mantiene por si se quisiera usar en el futuro, pero no afecta el vinilo.
+      if (Array.isArray(data)) {
+        const mp3s = data
+          .filter(item => item.type === 'file' && item.name.endsWith('.mp3'))
+          .map(item => {
+            const name = decodeURIComponent(item.name.replace('.mp3', '').replace(/[_]/g, ' '));
+            const parts = name.split(' - ');
+            const artist = parts.length > 1 ? parts[0].trim() : defaultArtist;
+            const title = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+
+            return {
+              title,
+              artist,
+              album: '',
+              albumArt: defaultAlbumArt,
               url: `https://${user}.github.io/${repo}/${item.name}`
-            }));
+            };
+          });
 
-          songs.push(...mp3s);
-        }
-      } catch (err) {
-        console.error(`Error cargando canciones del repo ${repo}:`, err);
+        songs.push(...mp3s);
       }
-    }
-
-    if (songs.length === 0) {
-      playlistEl.innerHTML = '<li>No se encontraron canciones en los repositorios.</li>';
-    } else {
-      renderPlaylist();
-      playSong(0);
+    } catch (err) {
+      console.error(`Error cargando canciones del repo ${repo}:`, err);
     }
   }
+
+  if (songs.length === 0) {
+    playlistEl.innerHTML = '<li>No se encontraron canciones en los repositorios.</li>';
+  } else {
+    renderPlaylist();
+    prepareSong(0);
+  }
+}
 
   function renderPlaylist() {
-    playlistEl.innerHTML = '';
-    songs.forEach((song, i) => {
-      const li = document.createElement('li');
-      li.textContent = song.title;
-      li.dataset.index = i;
-      li.addEventListener('click', () => playSong(i));
-      playlistEl.appendChild(li);
-    });
-  }
+  playlistEl.innerHTML = '';
+  songs.forEach((song, i) => {
+    const li = document.createElement('li');
+    li.dataset.index = i;
+
+    // Añadir título y artista como elementos separados
+    const titleEl = document.createElement('div');
+    titleEl.textContent = song.title;
+    titleEl.className = 'playlist-title';
+
+    const artistEl = document.createElement('div');
+    artistEl.textContent = song.artist;
+    artistEl.className = 'playlist-artist';
+
+    li.appendChild(titleEl);
+    li.appendChild(artistEl);
+
+    li.addEventListener('click', () => playSong(i));
+    playlistEl.appendChild(li);
+  });
+}
 
   function updatePlayingClass() {
     document.querySelectorAll('#playlist li').forEach((li, i) => {
       li.classList.toggle('playing', i === currentIndex);
     });
   }
+
+function prepareSong(index) {
+  if (index < 0 || index >= songs.length) return;
+
+  currentIndex = index;
+  const song = songs[currentIndex];
+  audioEl.src = song.url;
+  songTitleEl.textContent = song.title;
+  songArtistEl.textContent = song.artist;
+
+  // Actualiza UI pero sin reproducir
+  playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+  updatePlayingClass();
+  albumArtEl.style.animationPlayState = 'paused'; // Vinilo quieto
+}
 
   function playSong(index) {
     if (index < 0 || index >= songs.length) return;

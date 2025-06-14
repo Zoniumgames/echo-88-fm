@@ -754,6 +754,15 @@ body::before{
   color: var(--color-text-secondary);
 }
 
+#welcome-form input {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  width: 250px;
+  margin-bottom: 0.5rem;
+}
+
 </style>
 </head>
 <body>
@@ -761,8 +770,10 @@ body::before{
 <div id="welcome-screen">
   <img src="logoecho.png" alt="Echo 88 Logo" id="welcome-logo">
   <div id="welcome-form">
-    <input type="text" id="username-input" placeholder="Escribe tu nombre...">
+    <input type="text" id="username-input" placeholder="Usuario">
+    <input type="password" id="password-input" placeholder="Contraseña">
     <button id="enter-button">Entrar</button>
+    <p id="login-error" style="color: tomato; display: none;"></p>
   </div>
 </div>
 
@@ -775,7 +786,7 @@ body::before{
     <i class="fas fa-search search-icon"></i>
   </div>
   <nav>
-
+<button onclick="logoutUsuario()">Cerrar sesión</button>
   </nav>
 </header>
   <div id="user-greeting" style="display: none;"></div>
@@ -1036,43 +1047,9 @@ function prepareSong(index) {
   });
   
 window.addEventListener('DOMContentLoaded', () => {
-  const logo = document.getElementById('welcome-logo');
-  const form = document.getElementById('welcome-form');
-  const welcomeScreen = document.getElementById('welcome-screen');
-  const enterButton = document.getElementById('enter-button');
-  const greeting = document.getElementById('user-greeting');
-
   setTimeout(() => {
-    form.style.display = 'flex';
-  }, 1200);
-  enterButton.addEventListener('click', () => {
-  const username = document.getElementById('username-input').value.trim();
-  if (username !== "") {
-    localStorage.setItem('echo88-username', username);
-
-    // Mostrar saludo
-    greeting.textContent = `🎧 ¡Bienvenido, ${username}!`;
-    greeting.style.display = 'block';
-
-    // Ocultar saludo después de 10 segundos
-    setTimeout(() => {
-      greeting.style.opacity = '0';
-      greeting.style.transition = 'opacity 1s ease-out';
-      setTimeout(() => {
-        greeting.style.display = 'none';
-      }, 1000); // Espera a que la transición termine
-    }, 10000); // 10 segundos visibles
-
-    // Ocultar pantalla de bienvenida
-    welcomeScreen.style.opacity = '0';
-    welcomeScreen.style.pointerEvents = 'none';
-    setTimeout(() => {
-      welcomeScreen.remove();
-    }, 600);
-  } else {
-    alert("Por favor, escribe tu nombre.");
-  }
-});
+    document.getElementById('welcome-form').style.display = 'flex';
+  }, 1200); // Mostrar login tras animación del logo
 });
 
 
@@ -1118,6 +1095,119 @@ async function loadExternalUIData() {
 
   } catch (err) {
     console.error('❌ Error cargando datos externos:', err);
+  }
+}
+</script>
+<script>
+const BIN_ID = '684de23a8960c979a5a9f92b';
+const API_KEY = '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.';
+const url = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const headers = {
+  'X-Master-Key': API_KEY,
+  'Content-Type': 'application/json'
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('enter-button').addEventListener('click', loginUsuario);
+  checkSession(); // intenta restaurar sesión activa
+});
+
+async function loginUsuario() {
+  const username = document.getElementById('username-input').value.trim();
+  const password = document.getElementById('password-input').value.trim();
+  const errorEl = document.getElementById('login-error');
+
+  try {
+    const res = await fetch(url + '/latest', { headers });
+    const data = await res.json();
+    const usuarios = data.record.usuarios;
+
+    const userIndex = usuarios.findIndex(u => u.usuario === username && u.password === password);
+
+    if (userIndex === -1 || !usuarios[userIndex]) {
+  errorEl.textContent = "❌ Usuario o contraseña incorrectos";
+  errorEl.style.display = 'block';
+  return; // 🔒 Detener el flujo
+}
+
+    if (usuarios[userIndex].activo === true) {
+      errorEl.textContent = "⚠️ Este usuario ya tiene una sesión activa.";
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    // marcar sesión activa
+    usuarios[userIndex].activo = true;
+    await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ usuarios })
+    });
+
+    // guardar sesión local y continuar
+    localStorage.setItem('echo88-user', username);
+    iniciarReproductor(username);
+
+  } catch (err) {
+    errorEl.textContent = '❌ Error al iniciar sesión';
+    errorEl.style.display = 'block';
+  }
+}
+
+function iniciarReproductor(nombre) {
+  document.getElementById('welcome-screen').style.opacity = '0';
+  document.getElementById('welcome-screen').style.pointerEvents = 'none';
+  setTimeout(() => document.getElementById('welcome-screen').remove(), 600);
+
+  const greeting = document.getElementById('user-greeting');
+  if (greeting) {
+    greeting.textContent = `🎧 ¡Bienvenido, ${nombre}!`;
+    greeting.style.display = 'block';
+    setTimeout(() => {
+      greeting.style.opacity = '0';
+      setTimeout(() => greeting.style.display = 'none', 1000);
+    }, 10000);
+  }
+
+  // carga del reproductor
+  fetchSongsFromAllRepos();
+  loadExternalUIData();
+}
+
+async function logoutUsuario() {
+  const username = localStorage.getItem('echo88-user');
+  if (!username) return;
+
+  const res = await fetch(url + '/latest', { headers });
+  const data = await res.json();
+  const usuarios = data.record.usuarios;
+
+  const index = usuarios.findIndex(u => u.usuario === username);
+  if (index !== -1) {
+    usuarios[index].activo = false;
+    await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ usuarios })
+    });
+    localStorage.removeItem('echo88-user');
+    location.reload();
+  }
+}
+
+async function checkSession() {
+  const username = localStorage.getItem('echo88-user');
+  if (!username) return;
+
+  const res = await fetch(url + '/latest', { headers });
+  const data = await res.json();
+  const usuarios = data.record.usuarios;
+
+  const user = usuarios.find(u => u.usuario === username);
+  if (user && user.activo === true) {
+    iniciarReproductor(username);
+  } else {
+    localStorage.removeItem('echo88-user');
   }
 }
 </script>

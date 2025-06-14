@@ -721,6 +721,39 @@ body::before{
   margin-top: 0.2rem;
 }
 
+
+#recent-box {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 280px;
+  width: 260px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1rem;
+  background: rgba(20, 20, 30, 0.7); /* semitransparente */
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+}
+
+#recent-box h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-accent-primary);
+  text-align: center;
+}
+
+#recent-list {
+  list-style: none;
+  padding: 0;
+}
+
+#recent-list li {
+  margin-bottom: 0.4rem;
+  color: var(--color-text-secondary);
+}
+
 </style>
 </head>
 <body>
@@ -749,7 +782,7 @@ body::before{
 
 <div id="notice-bar">
   <div class="notice-content">
-    🚨 Ahi me avisan si hay VTO!!!
+    🚨 Próximamente necesitarás una cuenta para seguir disfrutando de tu música!
   </div>
   <button id="close-notice" title="Cerrar aviso">✖</button>
 </div>
@@ -758,6 +791,11 @@ body::before{
 
   <ul id="playlist"></ul>
 </main>
+
+<div id="recent-box">
+  <h3>Nuevas canciones</h3>
+  <ul id="recent-list"></ul>
+</div>
 
 <footer>
   <div class="player-section current-song-info">
@@ -984,7 +1022,12 @@ function prepareSong(index) {
   });
 
   // 🚀 Iniciar carga de todos los repos al entrar
-  window.addEventListener('DOMContentLoaded', fetchSongsFromAllRepos);
+  window.addEventListener('DOMContentLoaded', () => {
+  audioEl.volume = 0.4;
+  volumeSlider.value = 40;
+  loadExternalUIData();
+  fetchSongsFromAllRepos();
+});
 </script>
 
 <script>
@@ -1002,7 +1045,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     form.style.display = 'flex';
   }, 1200);
-
   enterButton.addEventListener('click', () => {
   const username = document.getElementById('username-input').value.trim();
   if (username !== "") {
@@ -1032,6 +1074,52 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 });
+
+
+async function loadExternalUIData() {
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/684ce02a8561e97a5023f0e8/latest', {
+      headers: {
+        'X-Master-Key': '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.'
+      }
+    });
+
+    const data = await res.json();
+    const record = data.record;
+
+    // ✅ Obtener elementos
+    const recentBox = document.getElementById('recent-box');
+    const recentList = document.getElementById('recent-list');
+
+    // ✅ Mostrar o esconder el recuadro lateral
+    if (recentBox) {
+      if (record.mostrarCaja === false) {
+        recentBox.style.display = 'none';
+      } else {
+        recentBox.style.display = 'block';
+      }
+    }
+
+    // ✅ Mostrar nuevas canciones
+    if (recentList && Array.isArray(record.nuevasCanciones)) {
+      recentList.innerHTML = '';
+      record.nuevasCanciones.forEach(cancion => {
+        const li = document.createElement('li');
+        li.textContent = cancion;
+        recentList.appendChild(li);
+      });
+    }
+
+    // ✅ Mostrar aviso
+    const noticeContent = document.querySelector('.notice-content');
+    if (noticeContent && record.aviso) {
+      noticeContent.textContent = record.aviso;
+    }
+
+  } catch (err) {
+    console.error('❌ Error cargando datos externos:', err);
+  }
+}
 </script>
 </body>
 </html>

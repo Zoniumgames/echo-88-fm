@@ -1205,6 +1205,11 @@ async function checkSession() {
 
   const user = usuarios.find(u => u.usuario === username);
   if (user && user.activo === true) {
+    // Ocultar login manualmente si ya está logueado
+    document.getElementById('welcome-screen').style.opacity = '0';
+    document.getElementById('welcome-screen').style.pointerEvents = 'none';
+    setTimeout(() => document.getElementById('welcome-screen')?.remove(), 600);
+
     iniciarReproductor(username);
   } else {
     localStorage.removeItem('echo88-user');

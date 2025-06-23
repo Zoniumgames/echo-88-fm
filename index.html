@@ -1146,6 +1146,8 @@ async function loginUsuario() {
 
     // guardar sesión local y continuar
     localStorage.setItem('echo88-user', username);
+    localStorage.setItem('last-activity', Date.now()); // ⏱️ Guarda el momento de login
+    initActivityListeners(); // 🖱️ Teclado/mouse reinician el tiempo
     iniciarReproductor(username);
 
   } catch (err) {
@@ -1205,15 +1207,35 @@ async function checkSession() {
 
   const user = usuarios.find(u => u.usuario === username);
   if (user && user.activo === true) {
-    // Ocultar login manualmente si ya está logueado
-    document.getElementById('welcome-screen').style.opacity = '0';
-    document.getElementById('welcome-screen').style.pointerEvents = 'none';
-    setTimeout(() => document.getElementById('welcome-screen')?.remove(), 600);
+  iniciarReproductor(username);
+  initActivityListeners(); // ← Agrega esta línea aquí
+} else {
+  localStorage.removeItem('echo88-user');
+}
+}
 
-    iniciarReproductor(username);
-  } else {
-    localStorage.removeItem('echo88-user');
-  }
+
+function initActivityListeners() {
+  // Actualiza cada vez que hay actividad del usuario
+  const resetTimer = () => localStorage.setItem('last-activity', Date.now());
+
+  ['mousemove', 'keydown', 'click', 'touchstart'].forEach(event =>
+    window.addEventListener(event, resetTimer)
+  );
+
+  // Chequeo periódico de inactividad
+  setInterval(() => {
+    const last = parseInt(localStorage.getItem('last-activity'), 10);
+    if (!last) return;
+
+    const ahora = Date.now();
+    const limite = 1 * 60 * 60 * 1000; // 2 horas en ms
+
+    if (ahora - last > limite) {
+      alert('🕒 Tu sesión ha expirado por inactividad.');
+      logoutUsuario(); // llama a tu función ya existente
+    }
+  }, 60000); // cada minuto
 }
 </script>
 </body>

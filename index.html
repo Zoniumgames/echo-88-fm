@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Echo 88 - Music Player</title>
+<title>Echo 88 fm</title>
 <!-- Preconnect para Google Fonts para mejor rendimiento -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -139,6 +139,16 @@
     align-items: center; /* Centra los elementos */
   }
 
+  /* Contenedor para la vista de playlist */
+  #playlist-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
   .search-container {
     position: relative;
     width: 100%;
@@ -152,7 +162,6 @@
     padding: var(--spacing-xs) var(--spacing-sm);
     flex-shrink: 0; /* Asegura que la barra de búsqueda no se encoja */
     margin: 0 auto;
-    order: 2;
   }
 
   #search-input {
@@ -215,6 +224,37 @@
     transform: scale(1.02);
     animation: pulse-border 1.5s infinite alternate;
   }
+  
+  /* Estilos para la vista de radio (placeholder) */
+  #radio-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: var(--color-text-secondary);
+  }
+
+  #radio-view .icon {
+    font-size: 4rem;
+    color: var(--color-accent-primary);
+    margin-bottom: var(--spacing-md);
+    filter: drop-shadow(0 0 10px var(--color-accent-primary));
+  }
+
+  #radio-view h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    color: var(--color-text-primary);
+  }
+
+  #radio-view p {
+    font-size: 1.1rem;
+    margin-top: var(--spacing-xs);
+  }
+
 
   /* Animación de Keyframes para la canción activa */
   @keyframes pulse-border {
@@ -778,15 +818,15 @@ body::before{
 </div>
 
 <header>
-  <!-- Espacio para tu logo "Echo 88" -->
-  <!-- Reemplaza "[YOUR_LOGO_PATH_HERE]" con la ruta real de tu archivo de imagen (ej. 'img/echo88-logo.png') -->
   <img id="app-logo" src="logoecho.png" alt="Echo 88 Music Player Logo">
     <div class="search-container">
     <input type="text" id="search-input" placeholder="Buscar canción...">
     <i class="fas fa-search search-icon"></i>
   </div>
   <nav>
-<button onclick="logoutUsuario()">Cerrar sesión</button>
+    <button id="playlist-mode-btn" style="display: none;">Playlist</button>
+    <button id="radio-mode-btn">Modo Radio</button>
+    <button onclick="logoutUsuario()">Cerrar sesión</button>
   </nav>
 </header>
   <div id="user-greeting" style="display: none;"></div>
@@ -799,8 +839,15 @@ body::before{
 </div>
 
 <main>
+  <div id="playlist-view">
+    <ul id="playlist"></ul>
+  </div>
 
-  <ul id="playlist"></ul>
+  <div id="radio-view" style="display: none;">
+    <div class="icon"><i class="fas fa-broadcast-tower"></i></div>
+    <h2>Modo Radio</h2>
+    <p>¡Próximamente! Esta sección está en construcción.</p>
+  </div>
 </main>
 
 <div id="recent-box">
@@ -810,11 +857,10 @@ body::before{
 
 <footer>
   <div class="player-section current-song-info">
-    <!-- Portada genérica del disco de vinilo -->
     <div id="album-art" class="vinyl-disc"></div>
     <div class="current-song-details">
       <div class="title" id="song-title">Cargando...</div>
-      <div class="artist" id="song-artist">Zonium Games</div> <!-- Artista genérico fijo -->
+      <div class="artist" id="song-artist">Zonium Games</div>
     </div>
   </div>
 
@@ -841,7 +887,8 @@ body::before{
 </footer>
 
 <script>
-  const user = 'zoniumgames'; // Tu usuario de GitHub
+  // --- Lógica del Reproductor (SIN CAMBIOS) ---
+  const user = 'zoniumgames';
   const repos = [
     'music-pack1-server',
     'music-pack2-server',
@@ -855,7 +902,7 @@ body::before{
 
   const playlistEl = document.getElementById('playlist');
   const audioEl = document.getElementById('audio');
-  const albumArtEl = document.getElementById('album-art'); // Es un div, no un img, para el disco de vinilo
+  const albumArtEl = document.getElementById('album-art');
   const songTitleEl = document.getElementById('song-title');
   const songArtistEl = document.getElementById('song-artist');
   const prevBtn = document.getElementById('prev-btn');
@@ -870,7 +917,7 @@ body::before{
   const totalTimeEl = document.getElementById('total-time');
   const searchInput = document.getElementById('search-input');
 
-  const defaultAlbumArt = 'https://via.placeholder.com/60/1E232B/A6A8AA?text=MUSIC'; // Esta variable ya no se usa directamente en el JS para establecer el src de albumArtEl, ya que es un div con background-image.
+  const defaultAlbumArt = 'https://via.placeholder.com/60/1E232B/A6A8AA?text=MUSIC';
   const defaultArtist = 'Zonium Games';
 
   let songs = [];
@@ -883,69 +930,64 @@ body::before{
   }
 
   async function fetchSongsFromAllRepos() {
-  songs = [];
-  playlistEl.innerHTML = '<li>Cargando canciones...</li>';
+    songs = [];
+    playlistEl.innerHTML = '<li>Cargando canciones...</li>';
 
-  for (const repo of repos) {
-    try {
-      const res = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/?ref=${branch}`);
-      const data = await res.json();
+    for (const repo of repos) {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/?ref=${branch}`);
+        const data = await res.json();
 
-      if (Array.isArray(data)) {
-        const mp3s = data
-          .filter(item => item.type === 'file' && item.name.endsWith('.mp3'))
-          .map(item => {
-            const name = decodeURIComponent(item.name.replace('.mp3', '').replace(/[_]/g, ' '));
-            const parts = name.split(' - ');
-            const artist = parts.length > 1 ? parts[0].trim() : defaultArtist;
-            const title = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+        if (Array.isArray(data)) {
+          const mp3s = data
+            .filter(item => item.type === 'file' && item.name.endsWith('.mp3'))
+            .map(item => {
+              const name = decodeURIComponent(item.name.replace('.mp3', '').replace(/[_]/g, ' '));
+              const parts = name.split(' - ');
+              const artist = parts.length > 1 ? parts[0].trim() : defaultArtist;
+              const title = parts.length > 1 ? parts[1].trim() : parts[0].trim();
 
-            return {
-              title,
-              artist,
-              album: '',
-              albumArt: defaultAlbumArt,
-              url: `https://${user}.github.io/${repo}/${item.name}`
-            };
-          });
+              return {
+                title,
+                artist,
+                album: '',
+                albumArt: defaultAlbumArt,
+                url: `https://${user}.github.io/${repo}/${item.name}`
+              };
+            });
 
-        songs.push(...mp3s);
+          songs.push(...mp3s);
+        }
+      } catch (err) {
+        console.error(`Error cargando canciones del repo ${repo}:`, err);
       }
-    } catch (err) {
-      console.error(`Error cargando canciones del repo ${repo}:`, err);
+    }
+
+    if (songs.length === 0) {
+      playlistEl.innerHTML = '<li>No se encontraron canciones en los repositorios.</li>';
+    } else {
+      renderPlaylist();
+      prepareSong(0);
     }
   }
 
-  if (songs.length === 0) {
-    playlistEl.innerHTML = '<li>No se encontraron canciones en los repositorios.</li>';
-  } else {
-    renderPlaylist();
-    prepareSong(0);
-  }
-}
-
   function renderPlaylist() {
-  playlistEl.innerHTML = '';
-  songs.forEach((song, i) => {
-    const li = document.createElement('li');
-    li.dataset.index = i;
-
-    // Añadir título y artista como elementos separados
-    const titleEl = document.createElement('div');
-    titleEl.textContent = song.title;
-    titleEl.className = 'playlist-title';
-
-    const artistEl = document.createElement('div');
-    artistEl.textContent = song.artist;
-    artistEl.className = 'playlist-artist';
-
-    li.appendChild(titleEl);
-    li.appendChild(artistEl);
-
-    li.addEventListener('click', () => playSong(i));
-    playlistEl.appendChild(li);
-  });
-}
+    playlistEl.innerHTML = '';
+    songs.forEach((song, i) => {
+      const li = document.createElement('li');
+      li.dataset.index = i;
+      const titleEl = document.createElement('div');
+      titleEl.textContent = song.title;
+      titleEl.className = 'playlist-title';
+      const artistEl = document.createElement('div');
+      artistEl.textContent = song.artist;
+      artistEl.className = 'playlist-artist';
+      li.appendChild(titleEl);
+      li.appendChild(artistEl);
+      li.addEventListener('click', () => playSong(i));
+      playlistEl.appendChild(li);
+    });
+  }
 
   function updatePlayingClass() {
     document.querySelectorAll('#playlist li').forEach((li, i) => {
@@ -953,47 +995,42 @@ body::before{
     });
   }
 
-function prepareSong(index) {
-  if (index < 0 || index >= songs.length) return;
-
-  currentIndex = index;
-  const song = songs[currentIndex];
-  audioEl.src = song.url;
-  songTitleEl.textContent = song.title;
-  songArtistEl.textContent = song.artist;
-
-  // Actualiza UI pero sin reproducir
-  playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-  updatePlayingClass();
-  albumArtEl.style.animationPlayState = 'paused'; // Vinilo quieto
-}
-
-  function playSong(index) {
+  function prepareSong(index) {
     if (index < 0 || index >= songs.length) return;
-
     currentIndex = index;
     const song = songs[currentIndex];
     audioEl.src = song.url;
     songTitleEl.textContent = song.title;
     songArtistEl.textContent = song.artist;
-    // albumArtEl es un div con background-image, no una etiqueta <img>, por lo que no se le asigna un src
+    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+    updatePlayingClass();
+    albumArtEl.style.animationPlayState = 'paused';
+  }
+
+  function playSong(index) {
+    if (index < 0 || index >= songs.length) return;
+    currentIndex = index;
+    const song = songs[currentIndex];
+    audioEl.src = song.url;
+    songTitleEl.textContent = song.title;
+    songArtistEl.textContent = song.artist;
     audioEl.play();
     playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
     updatePlayingClass();
-    document.getElementById('album-art').style.animationPlayState = 'running'; // Inicia la animación del vinilo
+    document.getElementById('album-art').style.animationPlayState = 'running';
   }
 
   function togglePlayPause() {
-  if (audioEl.paused) {
-    audioEl.play();
-    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-    document.getElementById('album-art').style.animationPlayState = 'running';
-  } else {
-    audioEl.pause();
-    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-    document.getElementById('album-art').style.animationPlayState = 'paused';
+    if (audioEl.paused) {
+      audioEl.play();
+      playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+      document.getElementById('album-art').style.animationPlayState = 'running';
+    } else {
+      audioEl.pause();
+      playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+      document.getElementById('album-art').style.animationPlayState = 'paused';
+    }
   }
-}
 
   function playPrev() {
     playSong((currentIndex - 1 + songs.length) % songs.length);
@@ -1031,212 +1068,193 @@ function prepareSong(index) {
       item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'flex' : 'none';
     });
   });
-
-  // 🚀 Iniciar carga de todos los repos al entrar
-  window.addEventListener('DOMContentLoaded', () => {
-  audioEl.volume = 0.4;
-  volumeSlider.value = 40;
-  loadExternalUIData();
-  fetchSongsFromAllRepos();
-});
 </script>
 
 <script>
+  // --- Lógica de UI (Avisos, Login, etc.) ---
   document.getElementById('close-notice')?.addEventListener('click', () => {
     document.getElementById('notice-bar').style.display = 'none';
   });
   
-window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    document.getElementById('welcome-form').style.display = 'flex';
-  }, 1200); // Mostrar login tras animación del logo
-});
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      document.getElementById('welcome-form').style.display = 'flex';
+    }, 1200);
+  });
 
-
-async function loadExternalUIData() {
-  try {
-    const res = await fetch('https://api.jsonbin.io/v3/b/684ce02a8561e97a5023f0e8/latest', {
-      headers: {
-        'X-Master-Key': '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.'
-      }
-    });
-
-    const data = await res.json();
-    const record = data.record;
-
-    // ✅ Obtener elementos
-    const recentBox = document.getElementById('recent-box');
-    const recentList = document.getElementById('recent-list');
-
-    // ✅ Mostrar o esconder el recuadro lateral
-    if (recentBox) {
-      if (record.mostrarCaja === false) {
-        recentBox.style.display = 'none';
-      } else {
-        recentBox.style.display = 'block';
-      }
-    }
-
-    // ✅ Mostrar nuevas canciones
-    if (recentList && Array.isArray(record.nuevasCanciones)) {
-      recentList.innerHTML = '';
-      record.nuevasCanciones.forEach(cancion => {
-        const li = document.createElement('li');
-        li.textContent = cancion;
-        recentList.appendChild(li);
+  async function loadExternalUIData() {
+    try {
+      const res = await fetch('https://api.jsonbin.io/v3/b/684ce02a8561e97a5023f0e8/latest', {
+        headers: { 'X-Master-Key': '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.' }
       });
+      const data = await res.json();
+      const record = data.record;
+      const recentBox = document.getElementById('recent-box');
+      const recentList = document.getElementById('recent-list');
+      if (recentBox) {
+        recentBox.style.display = record.mostrarCaja === false ? 'none' : 'block';
+      }
+      if (recentList && Array.isArray(record.nuevasCanciones)) {
+        recentList.innerHTML = '';
+        record.nuevasCanciones.forEach(cancion => {
+          const li = document.createElement('li');
+          li.textContent = cancion;
+          recentList.appendChild(li);
+        });
+      }
+      const noticeContent = document.querySelector('.notice-content');
+      if (noticeContent && record.aviso) {
+        noticeContent.textContent = record.aviso;
+      }
+    } catch (err) {
+      console.error('❌ Error cargando datos externos:', err);
     }
-
-    // ✅ Mostrar aviso
-    const noticeContent = document.querySelector('.notice-content');
-    if (noticeContent && record.aviso) {
-      noticeContent.textContent = record.aviso;
-    }
-
-  } catch (err) {
-    console.error('❌ Error cargando datos externos:', err);
   }
-}
-</script>
-<script>
-const BIN_ID = '684de23a8960c979a5a9f92b';
-const API_KEY = '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.';
-const url = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-const headers = {
-  'X-Master-Key': API_KEY,
-  'Content-Type': 'application/json'
-};
 
-window.addEventListener('DOMContentLoaded', () => {
+  const BIN_ID = '684de23a8960c979a5a9f92b';
+  const API_KEY = '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.';
+  const url = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+  const headers = {
+    'X-Master-Key': API_KEY,
+    'Content-Type': 'application/json'
+  };
+
   document.getElementById('enter-button').addEventListener('click', loginUsuario);
-  checkSession(); // intenta restaurar sesión activa
-});
+  checkSession();
 
-async function loginUsuario() {
-  const username = document.getElementById('username-input').value.trim();
-  const password = document.getElementById('password-input').value.trim();
-  const errorEl = document.getElementById('login-error');
+  async function loginUsuario() {
+    const username = document.getElementById('username-input').value.trim();
+    const password = document.getElementById('password-input').value.trim();
+    const errorEl = document.getElementById('login-error');
+    try {
+      const res = await fetch(url + '/latest', { headers });
+      const data = await res.json();
+      const usuarios = data.record.usuarios;
+      const userIndex = usuarios.findIndex(u => u.usuario === username && u.password === password);
+      if (userIndex === -1 || !usuarios[userIndex]) {
+        errorEl.textContent = "❌ Usuario o contraseña incorrectos";
+        errorEl.style.display = 'block';
+        return;
+      }
+      if (usuarios[userIndex].activo === true) {
+        errorEl.textContent = "⚠️ Este usuario ya tiene una sesión activa.";
+        errorEl.style.display = 'block';
+        return;
+      }
+      usuarios[userIndex].activo = true;
+      await fetch(url, { method: 'PUT', headers, body: JSON.stringify({ usuarios }) });
+      localStorage.setItem('echo88-user', username);
+      localStorage.setItem('last-activity', Date.now());
+      initActivityListeners();
+      iniciarReproductor(username);
+    } catch (err) {
+      errorEl.textContent = '❌ Error al iniciar sesión';
+      errorEl.style.display = 'block';
+    }
+  }
 
-  try {
+  function iniciarReproductor(nombre) {
+    document.getElementById('welcome-screen').style.opacity = '0';
+    document.getElementById('welcome-screen').style.pointerEvents = 'none';
+    setTimeout(() => document.getElementById('welcome-screen').remove(), 600);
+    const greeting = document.getElementById('user-greeting');
+    if (greeting) {
+      greeting.textContent = `🎧 ¡Bienvenido, ${nombre}!`;
+      greeting.style.display = 'block';
+      setTimeout(() => {
+        greeting.style.opacity = '0';
+        setTimeout(() => greeting.style.display = 'none', 1000);
+      }, 10000);
+    }
+    fetchSongsFromAllRepos();
+    loadExternalUIData();
+  }
+
+  async function logoutUsuario() {
+    const username = localStorage.getItem('echo88-user');
+    if (!username) return;
     const res = await fetch(url + '/latest', { headers });
     const data = await res.json();
     const usuarios = data.record.usuarios;
-
-    const userIndex = usuarios.findIndex(u => u.usuario === username && u.password === password);
-
-    if (userIndex === -1 || !usuarios[userIndex]) {
-  errorEl.textContent = "❌ Usuario o contraseña incorrectos";
-  errorEl.style.display = 'block';
-  return; // 🔒 Detener el flujo
-}
-
-    if (usuarios[userIndex].activo === true) {
-      errorEl.textContent = "⚠️ Este usuario ya tiene una sesión activa.";
-      errorEl.style.display = 'block';
-      return;
+    const index = usuarios.findIndex(u => u.usuario === username);
+    if (index !== -1) {
+      usuarios[index].activo = false;
+      await fetch(url, { method: 'PUT', headers, body: JSON.stringify({ usuarios }) });
+      localStorage.removeItem('echo88-user');
+      location.reload();
     }
-
-    // marcar sesión activa
-    usuarios[userIndex].activo = true;
-    await fetch(url, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ usuarios })
-    });
-
-    // guardar sesión local y continuar
-    localStorage.setItem('echo88-user', username);
-    localStorage.setItem('last-activity', Date.now()); // ⏱️ Guarda el momento de login
-    initActivityListeners(); // 🖱️ Teclado/mouse reinician el tiempo
-    iniciarReproductor(username);
-
-  } catch (err) {
-    errorEl.textContent = '❌ Error al iniciar sesión';
-    errorEl.style.display = 'block';
-  }
-}
-
-function iniciarReproductor(nombre) {
-  document.getElementById('welcome-screen').style.opacity = '0';
-  document.getElementById('welcome-screen').style.pointerEvents = 'none';
-  setTimeout(() => document.getElementById('welcome-screen').remove(), 600);
-
-  const greeting = document.getElementById('user-greeting');
-  if (greeting) {
-    greeting.textContent = `🎧 ¡Bienvenido, ${nombre}!`;
-    greeting.style.display = 'block';
-    setTimeout(() => {
-      greeting.style.opacity = '0';
-      setTimeout(() => greeting.style.display = 'none', 1000);
-    }, 10000);
   }
 
-  // carga del reproductor
-  fetchSongsFromAllRepos();
-  loadExternalUIData();
-}
-
-async function logoutUsuario() {
-  const username = localStorage.getItem('echo88-user');
-  if (!username) return;
-
-  const res = await fetch(url + '/latest', { headers });
-  const data = await res.json();
-  const usuarios = data.record.usuarios;
-
-  const index = usuarios.findIndex(u => u.usuario === username);
-  if (index !== -1) {
-    usuarios[index].activo = false;
-    await fetch(url, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ usuarios })
-    });
-    localStorage.removeItem('echo88-user');
-    location.reload();
-  }
-}
-
-async function checkSession() {
-  const username = localStorage.getItem('echo88-user');
-  if (!username) return;
-
-  const res = await fetch(url + '/latest', { headers });
-  const data = await res.json();
-  const usuarios = data.record.usuarios;
-
-  const user = usuarios.find(u => u.usuario === username);
-  if (user && user.activo === true) {
-  iniciarReproductor(username);
-  initActivityListeners(); // ← Agrega esta línea aquí
-} else {
-  localStorage.removeItem('echo88-user');
-}
-}
-
-
-function initActivityListeners() {
-  // Actualiza cada vez que hay actividad del usuario
-  const resetTimer = () => localStorage.setItem('last-activity', Date.now());
-
-  ['mousemove', 'keydown', 'click', 'touchstart'].forEach(event =>
-    window.addEventListener(event, resetTimer)
-  );
-
-  // Chequeo periódico de inactividad
-  setInterval(() => {
-    const last = parseInt(localStorage.getItem('last-activity'), 10);
-    if (!last) return;
-
-    const ahora = Date.now();
-    const limite = 1 * 60 * 60 * 1000; // 2 horas en ms
-
-    if (ahora - last > limite) {
-      alert('🕒 Tu sesión ha expirado por inactividad.');
-      logoutUsuario(); // llama a tu función ya existente
+  async function checkSession() {
+    const username = localStorage.getItem('echo88-user');
+    if (!username) return;
+    const res = await fetch(url + '/latest', { headers });
+    const data = await res.json();
+    const usuarios = data.record.usuarios;
+    const user = usuarios.find(u => u.usuario === username);
+    if (user && user.activo === true) {
+      iniciarReproductor(username);
+      initActivityListeners();
+    } else {
+      localStorage.removeItem('echo88-user');
     }
-  }, 60000); // cada minuto
-}
+  }
+
+  function initActivityListeners() {
+    const resetTimer = () => localStorage.setItem('last-activity', Date.now());
+    ['mousemove', 'keydown', 'click', 'touchstart'].forEach(event =>
+      window.addEventListener(event, resetTimer)
+    );
+    setInterval(() => {
+      const last = parseInt(localStorage.getItem('last-activity'), 10);
+      if (!last) return;
+      const ahora = Date.now();
+      const limite = 1 * 60 * 60 * 1000;
+      if (ahora - last > limite) {
+        alert('🕒 Tu sesión ha expirado por inactividad.');
+        logoutUsuario();
+      }
+    }, 60000);
+  }
 </script>
+
+<!-- Script para la lógica de cambio de modo (Playlist/Radio) -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Elementos de la UI para el cambio de modo
+    const playlistView = document.getElementById('playlist-view');
+    const radioView = document.getElementById('radio-view');
+    const playlistModeBtn = document.getElementById('playlist-mode-btn');
+    const radioModeBtn = document.getElementById('radio-mode-btn');
+    const footer = document.querySelector('footer'); // CAMBIO: Referencia al footer
+    
+    // Función para cambiar a la vista de Radio
+    function switchToRadioMode() {
+      playlistView.style.display = 'none';
+      radioView.style.display = 'flex';
+      footer.style.display = 'none'; // CAMBIO: Ocultar el footer
+      
+      // Actualizar botones
+      radioModeBtn.style.display = 'none';
+      playlistModeBtn.style.display = 'inline-block';
+    }
+    
+    // Función para cambiar a la vista de Playlist
+    function switchToPlaylistMode() {
+      radioView.style.display = 'none';
+      playlistView.style.display = 'flex';
+      footer.style.display = 'flex'; // CAMBIO: Mostrar el footer (usamos flex por su layout original)
+      
+      // Actualizar botones
+      playlistModeBtn.style.display = 'none';
+      radioModeBtn.style.display = 'inline-block';
+    }
+    
+    // Asignar los eventos a los botones
+    radioModeBtn.addEventListener('click', switchToRadioMode);
+    playlistModeBtn.addEventListener('click', switchToPlaylistMode);
+  });
+</script>
+
 </body>
 </html>

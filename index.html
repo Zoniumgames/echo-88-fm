@@ -51,19 +51,11 @@
   body::before { background-image: url(''); background-position: left center; mask-image: linear-gradient(to right, black 40%, transparent 100%); }
   body::after { background-image: url('pexels-steve-29708308.jpg'); background-position: right center; z-index: -2; }
   
-  /* HEADER FIX: Simplified layout for better alignment */
   header {
-    padding: var(--spacing-sm) var(--spacing-md);
-    display: flex; 
-    align-items: center;
-    justify-content: space-between; 
-    flex-wrap: wrap; 
-    gap: var(--spacing-md);
-    z-index: 10; 
-    flex-shrink: 0; 
-    border-bottom: 1px solid var(--color-glass-border);
-    background: var(--color-glass-bg); 
-    backdrop-filter: blur(var(--blur-amount));
+    padding: var(--spacing-sm) var(--spacing-md); display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-md);
+    z-index: 10; flex-shrink: 0; border-bottom: 1px solid var(--color-glass-border);
+    background: var(--color-glass-bg); backdrop-filter: blur(var(--blur-amount));
     -webkit-backdrop-filter: blur(var(--blur-amount));
   }
   .logo-wrapper { display: flex; flex-direction: column; align-items: flex-start; }
@@ -76,7 +68,7 @@
       font-size: 10px; font-weight: 300; color: rgba(255, 255, 255, 0.6);
       letter-spacing: 1px; margin-top: -8px;
   }
-  #welcome-screen .by-zonium { margin-top: 4px; }
+  #welcome-screen .logo-wrapper .by-zonium { margin-top: 4px; }
   
   nav { display: flex; gap: var(--spacing-xs); flex-wrap: wrap; justify-content: flex-end; }
   nav button {
@@ -94,7 +86,6 @@
     display: flex; flex-direction: column; align-items: center; padding-bottom: 120px;
   }
   
-  /* SEARCH BAR FIX: Glassmorphism restored */
   .search-container {
     position: relative; width: 100%; max-width: 500px; display: flex;
     align-items: center; padding: var(--spacing-xs); border-radius: var(--border-radius-md);
@@ -109,7 +100,6 @@
   #search-input::placeholder { color: var(--color-text-secondary); font-weight: 400; }
   .search-icon { color: var(--color-text-secondary); margin-right: var(--spacing-xs); }
 
-  /* PLAYER BAR REDESIGN & FIX */
   #floating-player-container {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
     display: flex; justify-content: center; align-items: flex-end;
@@ -125,9 +115,6 @@
     background: var(--color-player-bg); backdrop-filter: blur(var(--blur-amount));
     -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
     box-shadow: 0 4px 25px var(--color-shadow);
-    background: var(--color-glass-bg); 
-    backdrop-filter: blur(var(--blur-amount));
-    -webkit-backdrop-filter: blur(var(--blur-amount));
   }
 
   .player-section { display: flex; align-items: center; }
@@ -135,10 +122,17 @@
   .player-core { flex: 2; flex-direction: column; align-items: center; gap: 4px; }
   .visualizer { flex: 1; min-width: 150px; justify-content: flex-end; }
   
-  #album-art {
-    width: 48px; height: 48px; border-radius: var(--border-radius-sm);
-    flex-shrink: 0; background-color: #333; object-fit: cover;
+  .album-art-container { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+  .vinyl-disc {
+    position: absolute; width: 100%; height: 100%; border-radius: 50%;
+    background-image: url('5856b3da4f6ae202fedf2794.png'); background-size: cover;
+    animation: spin 4s linear infinite; animation-play-state: paused; aspect-ratio: 1 / 1;
   }
+  #album-art {
+    position: absolute; top: 15%; left: 15%; width: 70%; height: 70%;
+    border-radius: 50%; object-fit: cover;
+  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
   .current-song-details {
     display: flex; flex-direction: column; overflow: hidden; padding-left: var(--spacing-sm);
@@ -160,7 +154,6 @@
   }
   #current-time, #total-time { font-variant-numeric: tabular-nums; }
   
-  /* VISUALIZER ANIMATION */
   .visualizer-bars { display: flex; align-items: flex-end; gap: 4px; height: 30px; }
   .visualizer-bar {
     width: 4px; height: 100%; border-radius: 2px;
@@ -169,16 +162,13 @@
     animation: level-bounce 1.5s ease-in-out infinite alternate;
   }
   @keyframes level-bounce {
-    0% { transform: scaleY(0.2); }
-    25% { transform: scaleY(1); }
-    50% { transform: scaleY(0.4); }
-    75% { transform: scaleY(0.8); }
+    0% { transform: scaleY(0.2); } 25% { transform: scaleY(1); }
+    50% { transform: scaleY(0.4); } 75% { transform: scaleY(0.8); }
     100% { transform: scaleY(0.1); }
   }
   .visualizer-bar:nth-child(2) { animation-delay: -0.2s; }
   .visualizer-bar:nth-child(3) { animation-delay: -0.5s; }
   
-  /* VOLUME ORB ANIMATION */
   #volume-orb-container {
     position: relative; display: flex; justify-content: center; align-items: center;
     width: 60px; height: 60px; border-radius: 30px;
@@ -187,9 +177,6 @@
     -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
     box-shadow: 0 4px 25px var(--color-shadow);
     transition: height 0.25s ease-out, border-radius 0.25s ease-out;
-    background: var(--color-glass-bg); 
-    backdrop-filter: blur(var(--blur-amount));
-    -webkit-backdrop-filter: blur(var(--blur-amount));
   }
   #volume-orb-container:hover { height: 220px; border-radius: 30px; }
   #volume-orb-container > .fas { position: absolute; font-size: 1.3rem; color: var(--color-text-secondary); transition: opacity 0.2s ease-out; }
@@ -214,25 +201,6 @@
     margin-top: -4px; transition: background 0.2s ease;
   }
   
-  /* RESPONSIVENESS FIX */
-  @media (max-width: 980px) { #player-bar { max-width: 100%; } }
-  @media (max-width: 768px) {
-    header { flex-direction: column; align-items: center; }
-    header .logo-wrapper, header nav { text-align: center; }
-    main { padding-bottom: 220px; }
-    #floating-player-container { flex-direction: column; padding: var(--spacing-sm); gap: var(--spacing-sm); }
-    #player-bar {
-      flex-direction: column; max-width: 100%; width: 100%;
-      min-height: auto; gap: var(--spacing-sm); padding: var(--spacing-sm);
-    }
-    .player-section { width: 100%; }
-    .song-info { justify-content: center; text-align: center; }
-    .visualizer { display: none; }
-    #volume-orb-container { display: none; }
-  }
-  
-  /* --- OTHER STYLES (No major changes) --- */
-  ul#playlist, #radio-view, #welcome-screen, #notice-bar, #recent-box { /* Previous styles are fine */ }
   #playlist-view { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; overflow: hidden; }
   ul#playlist { list-style: none; width: 100%; max-width: 700px; flex: 1; overflow-y: auto; padding-right: 8px; }
   ul#playlist li { padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--border-radius-md); margin-bottom: var(--spacing-xs); cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; min-height: 50px; background: var(--color-glass-bg); backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border); box-shadow: 0 4px 25px var(--color-shadow); transition: all var(--transition-speed) var(--transition-ease); }
@@ -247,90 +215,52 @@
   #welcome-screen { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.6s ease-out; background: rgba(10, 5, 20, 0.6); backdrop-filter: blur(40px); }
   #welcome-screen .logo-wrapper { opacity: 0; transform: translateY(20px); animation: welcome-logo-pop 1s ease-out forwards; }
   @keyframes welcome-logo-pop { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  
   #welcome-form { margin-top: 2.5rem; display: none; flex-direction: column; gap: 1.5rem; align-items: center; animation: fade-in 1s ease-out forwards 0.5s; opacity: 0; padding: 2rem; border-radius: var(--border-radius-md); background: var(--color-glass-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border); box-shadow: 0 4px 25px var(--color-shadow); }
-  
-  @keyframes fade-in { 
-    from { 
-      opacity: 0; 
-    } 
-    to { 
-      opacity: 1;
-    } 
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  #welcome-form input { padding: 0.8rem 1rem; border-radius: var(--border-radius-sm); border: 1px solid var(--color-glass-border); font-size: 1rem; width: 250px; background: rgba(255,255,255, 0.1); color: var(--color-text-primary); outline: none; transition: all 0.3s ease; }
+  #welcome-form input:focus { border-color: var(--color-accent-primary); box-shadow: 0 0 10px var(--color-accent-primary-trans); }
+  #welcome-form button { background: var(--color-accent-primary); color: #111; border: none; padding: 0.8rem 1.5rem; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%; }
+  #welcome-form button:hover { background: var(--color-accent-hover); }
+
+  #notice-bar {
+    width: 100%; background: var(--color-accent-primary-trans); color: var(--color-text-primary);
+    overflow: hidden; height: 2.2rem; position: relative; z-index: 9;
+    border-bottom: 1px solid var(--color-accent-primary); backdrop-filter: blur(5px);
   }
-  
-  #welcome-form input { 
-    padding: 0.8rem 1rem; 
-    border-radius: var(--border-radius-sm); 
-    border: 1px solid var(--color-glass-border);
-    font-size: 1rem; 
-    width: 250px; 
-    background: rgba(255,255,255, 0.1); 
-    color: var(--color-text-primary); 
-    outline: none; 
-    transition: all 0.3s ease; 
+  .notice-content {
+    display: inline-block; white-space: nowrap; padding-left: 100%;
+    animation: scroll-left 15s linear infinite; font-weight: 600; line-height: 2.2rem;
   }
-  
-  #welcome-form input:focus { 
-    border-color: var(--color-accent-primary); 
-    box-shadow: 0 0 10px var(--color-accent-primary-trans);
-  }
-  
-  #welcome-form button { 
-    background: var(--color-accent-primary); 
-    color: #111; 
-    border: none; 
-    padding: 0.8rem 1.5rem; 
-    border-radius: var(--border-radius-sm); 
-    font-weight: 600; 
-    cursor: pointer; 
-    transition: background 0.3s; 
-    width: 100%; 
-  }
-  
-  #welcome-form button:hover { 
-    background: var(--color-accent-hover); 
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+  #close-notice {
+    position: absolute; right: 10px; top: 4px; background: transparent; border: none;
+    color: white; font-size: 1.1rem; cursor: pointer;
   }
   
   #recent-box { display: none; }
   
-  /* --- VINYL DISC LAYERED ANIMATION (FIX) --- */
-.album-art-container {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-}
-
-.vinyl-disc {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-image: url('5856b3da4f6ae202fedf2794.png'); /* ¡Tu imagen de vinilo! */
-  background-size: cover;
-  animation: spin 4s linear infinite;
-  animation-play-state: paused;
-  aspect-ratio: 1 / 1;
-}
-
-#album-art {
-  position: absolute;
-  top: 15%; /* Centra la carátula */
-  left: 15%;
-  width: 70%; /* La hace más pequeña que el vinilo */
-  height: 70%;
-  border-radius: 50%; /* La hace circular */
-  object-fit: cover;
-  /* Esta imagen no tiene animación, por lo que permanecerá estática */
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
- .auralink {
+  @media (max-width: 980px) { #player-bar { max-width: 100%; } }
+  @media (max-width: 768px) {
+    header { flex-direction: column; align-items: center; }
+    header .logo-wrapper, header nav { text-align: center; }
+    header .search-container { order: 3; width: 100%; margin: var(--spacing-sm) 0 0; }
+    nav { order: 2; }
+    
+    main { padding-bottom: 220px; }
+    
+    #floating-player-container { flex-direction: column; padding: var(--spacing-sm); gap: var(--spacing-sm); }
+    #player-bar {
+      flex-direction: column; max-width: 100%; width: 100%;
+      min-height: auto; gap: var(--spacing-sm); padding: var(--spacing-sm);
+    }
+    .player-section { width: 100%; }
+    .song-info { justify-content: center; text-align: center; }
+    .visualizer { display: none; }
+    #volume-orb-container { display: none; }
+  }
+  
+   .auralink {
+    
       font-weight: 700;
       color: white;
       letter-spacing: 1px;
@@ -345,13 +275,13 @@
 
     .by-zonium {
       font-family: 'Outfit', sans-serif;
+  
       font-weight: 300;
       color: rgba(255, 255, 255, 0.6);
       text-align: right;
       margin-top: 6px;
       letter-spacing: 1px;
     }
-    
 </style>
 </head>
 <body>
@@ -383,6 +313,11 @@
     <button onclick="logoutUsuario()">Cerrar sesión</button>
   </nav>
 </header>
+<div id="notice-bar">
+  <div class="notice-content">Auralink by Zonium
+  </div>
+  <button id="close-notice" title="Cerrar aviso">✖</button>
+</div>
 <main>
   <div id="playlist-view">
     <ul id="playlist"></ul>
@@ -398,13 +333,9 @@
   <div id="player-bar">
     <div class="player-section song-info">
       <div class="album-art-container">
+        <div id="vinyl-background" class="vinyl-disc"></div>
         
-    <!-- El DIV que será nuestro vinilo giratorio -->
-    <div id="vinyl-background" class="vinyl-disc"></div> 
-    <!-- La IMG que será la carátula estática en el centro -->
-
-  </div>
-  
+      </div>
       <div class="current-song-details">
         <div class="title" id="song-title">Cargando...</div>
         <div class="artist" id="song-artist">Zonium Games</div>
@@ -443,13 +374,14 @@
 <audio id="audio"></audio>
 
 <script>
-  // --- (Todo el JavaScript va aquí, sin cambios en la lógica, solo se ajustan los event listeners si es necesario) ---
+  // Player and UI constants
   const user = 'zoniumgames';
   const repos = ['music-pack1-server', 'music-pack2-server', 'music-pack3-server', 'music-pack4-server', 'music-pack5-server', 'music-pack6-server', 'music-pack7-server'];
   const branch = 'main';
   const playlistEl = document.getElementById('playlist');
   const audioEl = document.getElementById('audio');
   const albumArtEl = document.getElementById('album-art');
+  const vinylBackgroundEl = document.getElementById('vinyl-background');
   const songTitleEl = document.getElementById('song-title');
   const songArtistEl = document.getElementById('song-artist');
   const prevBtn = document.getElementById('prev-btn');
@@ -460,7 +392,6 @@
   const currentTimeEl = document.getElementById('current-time');
   const totalTimeEl = document.getElementById('total-time');
   const searchInput = document.getElementById('search-input');
-  const vinylBackgroundEl = document.getElementById('vinyl-background');
   const defaultArtist = 'Zonium Games';
   
   let songs = [];
@@ -546,6 +477,7 @@
     audioEl.src = song.url;
     songTitleEl.textContent = song.title;
     songArtistEl.textContent = song.artist;
+    albumArtEl.src = '7a5e86f026faee37d9b0392f8fecc861.png';
     playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
     updatePlayingClass();
     vinylBackgroundEl.style.animationPlayState = 'paused';
@@ -555,11 +487,10 @@
     if (index < 0 || index >= songs.length) return;
     currentIndex = index;
     const song = songs[currentIndex];
-    if (audioEl.src !== song.url) {
-      audioEl.src = song.url;
-    }
+    if (audioEl.src !== song.url) { audioEl.src = song.url; }
     songTitleEl.textContent = song.title;
     songArtistEl.textContent = song.artist;
+    albumArtEl.src = '7a5e86f026faee37d9b0392f8fecc861.png';
     audioEl.play();
     playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
     updatePlayingClass();
@@ -597,14 +528,18 @@
   searchInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
     document.querySelectorAll('#playlist li').forEach(item => {
-      const isVisible = item.textContent.toLowerCase().includes(searchTerm);
-      item.style.display = isVisible ? 'flex' : 'none';
+      item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'flex' : 'none';
     });
   });
 
-  const BIN_ID = '684de23a8960c979a5a9f92b';
+  document.getElementById('close-notice')?.addEventListener('click', () => {
+    document.getElementById('notice-bar').style.display = 'none';
+  });
+
+  const BIN_ID_USERS = '684de23a8960c979a5a9f92b';
+  const BIN_ID_DATA = '684ce02a8561e97a5023f0e8';
   const API_KEY = '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.';
-  const url_users = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+  const url_users = `https://api.jsonbin.io/v3/b/${BIN_ID_USERS}`;
   const headers = { 'X-Master-Key': API_KEY, 'Content-Type': 'application/json' };
   
   document.getElementById('enter-button').addEventListener('click', loginUsuario);
@@ -642,6 +577,7 @@
         setTimeout(() => welcomeScreen.remove(), 600);
     }
     fetchSongsFromAllRepos();
+    loadExternalUIData();
   }
 
   async function logoutUsuario() {
@@ -676,9 +612,34 @@
         localStorage.removeItem('auralink-user');
         localStorage.removeItem('auralink-last-activity');
       }
-    } catch (err) {
-      localStorage.removeItem('auralink-user');
-    }
+    } catch (err) { localStorage.removeItem('auralink-user'); }
+  }
+
+  async function loadExternalUIData() {
+    try {
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_DATA}/latest`, {
+        headers: { 'X-Master-Key': API_KEY }
+      });
+      const data = await res.json();
+      const record = data.record;
+      const recentBox = document.getElementById('recent-box');
+      if (recentBox) {
+        recentBox.style.display = record.mostrarCaja === false ? 'none' : 'block';
+        const recentList = recentBox.querySelector('ul');
+        if (recentList && Array.isArray(record.nuevasCanciones)) {
+            recentList.innerHTML = '';
+            record.nuevasCanciones.forEach(cancion => {
+            const li = document.createElement('li');
+            li.textContent = cancion;
+            recentList.appendChild(li);
+            });
+        }
+      }
+      const noticeContent = document.querySelector('.notice-content');
+      if (noticeContent && record.aviso) {
+        noticeContent.textContent = record.aviso;
+      }
+    } catch (err) { console.error('❌ Error cargando datos externos:', err); }
   }
 
   function initActivityListeners() {
@@ -688,7 +649,7 @@
       const last = parseInt(localStorage.getItem('auralink-last-activity'), 10);
       if (!last) return;
       const ahora = Date.now();
-      const limite = 2 * 60 * 60 * 1000; // 2 horas
+      const limite = 2 * 60 * 60 * 1000;
       if (ahora - last > limite) {
         alert('🕒 Tu sesión ha expirado por inactividad.');
         logoutUsuario();

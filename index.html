@@ -52,10 +52,17 @@
   body::after { background-image: url('pexels-steve-29708308.jpg'); background-position: right center; z-index: -2; }
   
   header {
-    padding: var(--spacing-sm) var(--spacing-md); display: flex; align-items: center;
-    justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-md);
-    z-index: 10; flex-shrink: 0; border-bottom: 1px solid var(--color-glass-border);
-    background: var(--color-glass-bg); backdrop-filter: blur(var(--blur-amount));
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex; 
+    align-items: center;
+    justify-content: space-between; 
+    flex-wrap: wrap; 
+    gap: var(--spacing-md);
+    z-index: 10; 
+    flex-shrink: 0; 
+    border-bottom: 1px solid var(--color-glass-border);
+    background: var(--color-glass-bg); 
+    backdrop-filter: blur(var(--blur-amount));
     -webkit-backdrop-filter: blur(var(--blur-amount));
   }
   .logo-wrapper { display: flex; flex-direction: column; align-items: flex-start; }
@@ -115,6 +122,8 @@
     background: var(--color-player-bg); backdrop-filter: blur(var(--blur-amount));
     -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
     box-shadow: 0 4px 25px var(--color-shadow);
+    background: var(--color-glass-bg); 
+    backdrop-filter: blur(var(--blur-amount));
   }
 
   .player-section { display: flex; align-items: center; }
@@ -177,6 +186,8 @@
     -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
     box-shadow: 0 4px 25px var(--color-shadow);
     transition: height 0.25s ease-out, border-radius 0.25s ease-out;
+    background: var(--color-glass-bg);
+backdrop-filter: blur(var(--blur-amount));
   }
   #volume-orb-container:hover { height: 220px; border-radius: 30px; }
   #volume-orb-container > .fas { position: absolute; font-size: 1.3rem; color: var(--color-text-secondary); transition: opacity 0.2s ease-out; }
@@ -205,9 +216,29 @@
   ul#playlist { list-style: none; width: 100%; max-width: 700px; flex: 1; overflow-y: auto; padding-right: 8px; }
   ul#playlist li { padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--border-radius-md); margin-bottom: var(--spacing-xs); cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; min-height: 50px; background: var(--color-glass-bg); backdrop-filter: blur(var(--blur-amount)); -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border); box-shadow: 0 4px 25px var(--color-shadow); transition: all var(--transition-speed) var(--transition-ease); }
   ul#playlist li:hover { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.3); transform: scale(1.02); }
-  ul#playlist li.playing { background: var(--color-accent-primary-trans); border: 1px solid var(--color-accent-primary); box-shadow: 0 0 20px var(--color-accent-primary-trans); transform: scale(1.02); }
-  .playlist-title { font-size: 1rem; font-weight: 600; color: var(--color-text-primary); }
-  .playlist-artist { font-size: 0.85rem; color: var(--color-text-secondary); font-weight: 400; }
+  
+  /* HIGHLIGHT FIX: This rule ensures the playing song stays highlighted */
+  ul#playlist li.playing,
+  ul#playlist li.playing:hover {
+    background: hsla(260, 100%, 85%, 0.4); 
+    border-color: var(--color-accent-hover);    
+    box-shadow: 0 0 25px hsla(260, 100%, 85%, 0.5); 
+    transform: scale(1.02);
+  }
+  ul#playlist li.playing .playlist-title {
+      color: white;
+      font-weight: 700;
+  }
+  ul#playlist li.playing .playlist-artist {
+      color: var(--color-accent-hover);
+  }
+
+  /* SCROLLBAR FIX: Restored styles */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
   #radio-view { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; text-align: center; color: var(--color-text-secondary); }
   #radio-view .icon { font-size: 4rem; margin-bottom: var(--spacing-md); color: var(--color-accent-primary); }
   #radio-view h2 { font-family: 'Orbitron', sans-serif; font-size: 2rem; color: var(--color-text-primary); }
@@ -258,30 +289,6 @@
     .visualizer { display: none; }
     #volume-orb-container { display: none; }
   }
-  
-   .auralink {
-    
-      font-weight: 700;
-      color: white;
-      letter-spacing: 1px;
-      background: linear-gradient(to right, 
-        rgba(255,255,255,1) 0%, 
-        rgba(255,255,255,0.8) 80%, 
-        rgba(255,255,255,0.05) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
-    }
-
-    .by-zonium {
-      font-family: 'Outfit', sans-serif;
-  
-      font-weight: 300;
-      color: rgba(255, 255, 255, 0.6);
-      text-align: right;
-      margin-top: 6px;
-      letter-spacing: 1px;
-    }
 </style>
 </head>
 <body>
@@ -314,7 +321,8 @@
   </nav>
 </header>
 <div id="notice-bar">
-  <div class="notice-content">Auralink by Zonium
+  <div class="notice-content">
+    🚨 Este es un aviso de prueba que se mueve de derecha a izquierda.
   </div>
   <button id="close-notice" title="Cerrar aviso">✖</button>
 </div>
@@ -334,7 +342,6 @@
     <div class="player-section song-info">
       <div class="album-art-container">
         <div id="vinyl-background" class="vinyl-disc"></div>
-        
       </div>
       <div class="current-song-details">
         <div class="title" id="song-title">Cargando...</div>
@@ -482,34 +489,53 @@
     updatePlayingClass();
     vinylBackgroundEl.style.animationPlayState = 'paused';
   }
-
+  
+  // JAVASCRIPT FIX: Robust playSong function
   function playSong(index) {
     if (index < 0 || index >= songs.length) return;
     currentIndex = index;
     const song = songs[currentIndex];
-    if (audioEl.src !== song.url) { audioEl.src = song.url; }
+    
     songTitleEl.textContent = song.title;
     songArtistEl.textContent = song.artist;
-    albumArtEl.src = '7a5e86f026faee37d9b0392f8fecc861.png';
-    audioEl.play();
-    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    albumArtEl.src = '7a5e86f026faee37d9b0392f8fecc861.png'; // Placeholder
     updatePlayingClass();
-    vinylBackgroundEl.style.animationPlayState = 'running';
-  }
 
-  function togglePlayPause() {
-    if (audioEl.paused) {
-      if (currentIndex === -1 && songs.length > 0) {
-        playSong(0);
-      } else if (currentIndex !== -1) {
-        audioEl.play();
+    audioEl.src = song.url;
+    const playPromise = audioEl.play();
+
+    if (playPromise !== undefined) {
+      playPromise.then(_ => {
         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
         vinylBackgroundEl.style.animationPlayState = 'running';
-      }
-    } else {
+      }).catch(error => {
+        console.error("Playback was prevented:", error);
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        vinylBackgroundEl.style.animationPlayState = 'paused';
+      });
+    }
+  }
+
+  // JAVASCRIPT FIX: Simplified and reliable toggle function
+  function togglePlayPause() {
+    if (audioEl.src && !audioEl.paused) {
       audioEl.pause();
       playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
       vinylBackgroundEl.style.animationPlayState = 'paused';
+    } else {
+      if (currentIndex === -1 && songs.length > 0) {
+        playSong(0);
+      } else if (currentIndex !== -1) {
+        const playPromise = audioEl.play();
+        if (playPromise !== undefined) {
+          playPromise.then(_ => {
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            vinylBackgroundEl.style.animationPlayState = 'running';
+          }).catch(error => {
+             console.error("Toggle playback failed:", error);
+          });
+        }
+      }
     }
   }
 
@@ -614,7 +640,7 @@
       }
     } catch (err) { localStorage.removeItem('auralink-user'); }
   }
-
+  
   async function loadExternalUIData() {
     try {
       const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_DATA}/latest`, {
@@ -637,6 +663,7 @@
       }
       const noticeContent = document.querySelector('.notice-content');
       if (noticeContent && record.aviso) {
+        document.getElementById('notice-bar').style.display = 'block';
         noticeContent.textContent = record.aviso;
       }
     } catch (err) { console.error('❌ Error cargando datos externos:', err); }

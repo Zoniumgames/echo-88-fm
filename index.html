@@ -52,17 +52,10 @@
   body::after { background-image: url('pexels-steve-29708308.jpg'); background-position: right center; z-index: -2; }
   
   header {
-    padding: var(--spacing-sm) var(--spacing-md);
-    display: flex; 
-    align-items: center;
-    justify-content: space-between; 
-    flex-wrap: wrap; 
-    gap: var(--spacing-md);
-    z-index: 10; 
-    flex-shrink: 0; 
-    border-bottom: 1px solid var(--color-glass-border);
-    background: var(--color-glass-bg); 
-    backdrop-filter: blur(var(--blur-amount));
+    padding: var(--spacing-sm) var(--spacing-md); display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-md);
+    z-index: 10; flex-shrink: 0; border-bottom: 1px solid var(--color-glass-border);
+    background: var(--color-glass-bg); backdrop-filter: blur(var(--blur-amount));
     -webkit-backdrop-filter: blur(var(--blur-amount));
   }
   .logo-wrapper { display: flex; flex-direction: column; align-items: flex-start; }
@@ -122,8 +115,6 @@
     background: var(--color-player-bg); backdrop-filter: blur(var(--blur-amount));
     -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
     box-shadow: 0 4px 25px var(--color-shadow);
-    background: var(--color-glass-bg); 
-    backdrop-filter: blur(var(--blur-amount));
   }
 
   .player-section { display: flex; align-items: center; }
@@ -186,8 +177,6 @@
     -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
     box-shadow: 0 4px 25px var(--color-shadow);
     transition: height 0.25s ease-out, border-radius 0.25s ease-out;
-    background: var(--color-glass-bg);
-backdrop-filter: blur(var(--blur-amount));
   }
   #volume-orb-container:hover { height: 220px; border-radius: 30px; }
   #volume-orb-container > .fas { position: absolute; font-size: 1.3rem; color: var(--color-text-secondary); transition: opacity 0.2s ease-out; }
@@ -342,6 +331,7 @@ backdrop-filter: blur(var(--blur-amount));
     <div class="player-section song-info">
       <div class="album-art-container">
         <div id="vinyl-background" class="vinyl-disc"></div>
+        <img id="album-art" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Album Art">
       </div>
       <div class="current-song-details">
         <div class="title" id="song-title">Cargando...</div>

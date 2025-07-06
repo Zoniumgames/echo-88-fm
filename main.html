@@ -813,7 +813,7 @@ loadExternalUIData();
         // Forzamos el cierre de sesión.
         localStorage.clear();
         signOut(auth).then(() => {
-          alert("Tu sesión ha sido iniciada en otro dispositivo o ha finalizado.");
+        
           window.location.href = "index.html"; // Asegura la redirección
         });
       }

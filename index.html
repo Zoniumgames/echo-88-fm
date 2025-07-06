@@ -259,10 +259,10 @@
 
   <!-- Firebase -->
   <!-- En login.html, dentro del <script type="module"> -->
-<script type="module">
+  <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+  import { getDatabase, ref, set, remove } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDvzpt-_e4LPuhTIrZyjvJ0-3umeG42gxQ",
@@ -295,29 +295,27 @@
       const user = userCredential.user;
       const userRef = ref(db, `usuariosConectados/${user.uid}`);
 
-      // No hay verificación. Simplemente toma control de la sesión.
+      await remove(userRef);
+
       const newSessionToken = Date.now().toString();
       await set(userRef, {
         token: newSessionToken,
         timestamp: newSessionToken
       });
 
-      // Guarda el nuevo token localmente
       localStorage.setItem("auralink-session-token", newSessionToken);
       localStorage.setItem("auralink-user-email", email);
 
-      // Redirige al reproductor
       window.location.href = "main.html";
 
     } catch (err) {
-      // El único error ahora sería por credenciales incorrectas.
       errorEl.textContent = "❌ Usuario o contraseña incorrectos.";
       errorEl.style.display = 'block';
       loginBtn.disabled = false;
       loginBtn.textContent = "Entrar";
     }
   });
-</script>
+  </script>
    <script>
   document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("welcome-form");

@@ -832,12 +832,16 @@ loadExternalUIData();
     if (user) {
       // Borramos el registro de la base de datos.
       await remove(ref(db, `usuariosConectados/${user.uid}`));
+
+      await onDisconnect(userRef).cancel();
+    // 2. Ahora sí, borramos el nodo de forma segura.
+    await remove(userRef);
     }
     
     // Limpiamos todo y redirigimos.
     localStorage.clear();
     await signOut(auth);
-    window.location.href = "index.html";
+    
   }
 
   function cambiarPasswordDirectamente() {

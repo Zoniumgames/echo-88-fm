@@ -258,79 +258,64 @@
   </div>
 
   <!-- Firebase -->
-  <script type="module">
+  <!-- En login.html, dentro del <script type="module"> -->
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
-  
+  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyDvzpt-_e4LPuhTIrZyjvJ0-3umeG42gxQ",
     authDomain: "auralink-login-system.firebaseapp.com",
     projectId: "auralink-login-system",
-    storageBucket: "auralink-login-system.appspot.com", // O firebasestorage.app, verifica en tu consola Firebase
+    storageBucket: "auralink-login-system.appspot.com",
     messagingSenderId: "994847781588",
     appId: "1:994847781588:web:a549c81619a7ebcd0bc141"
   };
-  
+
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
-  
+
   const loginBtn = document.getElementById('enter-button');
   const usernameInput = document.getElementById('username-input');
   const passwordInput = document.getElementById('password-input');
   const errorEl = document.getElementById('login-error');
-  
+
   loginBtn.addEventListener('click', async () => {
     const email = usernameInput.value.trim();
     const password = passwordInput.value.trim();
-    
+
     loginBtn.disabled = true;
     loginBtn.textContent = "Verificando...";
     errorEl.style.display = 'none';
-    
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const userRef = ref(db, `usuariosConectados/${user.uid}`);
-      
-      // Comprueba si ya hay una sesión activa en la base de datos
-      const snapshot = await get(userRef);
-      if (snapshot.exists()) {
-        // Si existe, no permitimos el login. El usuario debe cerrar la otra sesión primero.
-        throw new Error("Sesión activa en otro dispositivo.");
-      }
-      
-      // Si no hay sesión, crea una nueva.
-      const sessionToken = Date.now().toString();
+
+      // No hay verificación. Simplemente toma control de la sesión.
+      const newSessionToken = Date.now().toString();
       await set(userRef, {
-        token: sessionToken,
-        timestamp: sessionToken
+        token: newSessionToken,
+        timestamp: newSessionToken
       });
-      
-      // Guarda el token en el almacenamiento local para que la otra página pueda verificarlo.
-      localStorage.setItem("auralink-session-token", sessionToken);
-      localStorage.setItem("auralink-user-email", email); // Guardamos el email por si lo necesitas
-      
+
+      // Guarda el nuevo token localmente
+      localStorage.setItem("auralink-session-token", newSessionToken);
+      localStorage.setItem("auralink-user-email", email);
+
       // Redirige al reproductor
       window.location.href = "main.html";
-      
+
     } catch (err) {
-      if (err.message === "Sesión activa en otro dispositivo.") {
-        errorEl.textContent = "⚠️ Ya hay una sesión activa en otro dispositivo.";
-      } else {
-        errorEl.textContent = "❌ Usuario o contraseña incorrectos.";
-      }
+      // El único error ahora sería por credenciales incorrectas.
+      errorEl.textContent = "❌ Usuario o contraseña incorrectos.";
       errorEl.style.display = 'block';
       loginBtn.disabled = false;
       loginBtn.textContent = "Entrar";
     }
-  });
-</script>
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("welcome-form");
-    if (form) form.style.display = "flex";
   });
 </script>
 </body>

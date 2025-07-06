@@ -769,14 +769,14 @@ loadExternalUIData();
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-  import { getDatabase, ref, get, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+  import { getDatabase, ref, get, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
   // --- CONFIGURACIÓN DE FIREBASE ---
   const firebaseConfig = {
     apiKey: "AIzaSyDvzpt-_e4LPuhTIrZyjvJ0-3umeG42gxQ",
     authDomain: "auralink-login-system.firebaseapp.com",
     projectId: "auralink-login-system",
-    storageBucket: "auralink-login-system.appspot.com", // O firebasestorage.app
+    storageBucket: "auralink-login-system.appspot.com", // Asegúrate que este dominio sea el correcto
     messagingSenderId: "994847781588",
     appId: "1:994847781588:web:a549c81619a7ebcd0bc141"
   };
@@ -786,37 +786,78 @@ loadExternalUIData();
   const db = getDatabase(app);
 
   const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 horas
+  let sessionListener = null; // Variable para controlar el listener de sesión
 
   // --- FUNCIONES DE LA APLICACIÓN ---
 
+  function startSessionWatcher(user) {
+    const userRef = ref(db, `usuariosConectados/${user.uid}`);
+    const localToken = localStorage.getItem("auralink-session-token");
+    
+    // Si ya hay un listener, lo detenemos antes de crear uno nuevo.
+    if (sessionListener) {
+      sessionListener();
+    }
+    
+    // onValue escucha cambios en tiempo real en el nodo de la sesión.
+    sessionListener = onValue(userRef, (snapshot) => {
+      // Si el nodo es eliminado o el token no coincide con el nuestro, cerramos sesión.
+      if (!snapshot.exists() || snapshot.val().token !== localToken) {
+        console.log("⚠️ Sesión tomada por otro dispositivo o finalizada remotamente. Cerrando...");
+        
+        // Detenemos este listener para evitar que se ejecute múltiples veces.
+        if (sessionListener) {
+          sessionListener(); // Llama a la función de des-suscripción
+        }
+        
+        // Forzamos el cierre de sesión.
+        localStorage.clear();
+        signOut(auth).then(() => {
+          alert("Tu sesión ha sido iniciada en otro dispositivo o ha finalizado.");
+          window.location.href = "index.html"; // Asegura la redirección
+        });
+      }
+    });
+  }
+  
   async function cerrarSesion() {
-    console.log("🔐 Cerrando sesión...");
+    console.log("🔐 Cerrando sesión manualmente...");
     const user = auth.currentUser;
+    
+    // Detenemos el vigilante para que no reaccione al borrado que vamos a hacer.
+    if (sessionListener) {
+      sessionListener();
+    }
+
     if (user) {
-      // Elimina el registro de la sesión de la base de datos
+      // Borramos el registro de la base de datos.
       await remove(ref(db, `usuariosConectados/${user.uid}`));
     }
-    // Limpia el almacenamiento local y cierra sesión en Firebase
+    
+    // Limpiamos todo y redirigimos.
     localStorage.clear();
     await signOut(auth);
-    // Redirige de vuelta al login
     window.location.href = "index.html";
   }
 
   function cambiarPasswordDirectamente() {
     const user = auth.currentUser;
     if (!user) { return alert("No hay sesión activa."); }
+
     const oldPass = prompt("Introduce tu contraseña actual:");
+    if (!oldPass) return; // Si el usuario cancela
+
     const newPass = prompt("Ahora ingresa tu nueva contraseña:");
-    if (!oldPass || !newPass) { return; }
+    if (!newPass) return; // Si el usuario cancela
+
     const cred = EmailAuthProvider.credential(user.email, oldPass);
     reauthenticateWithCredential(user, cred)
       .then(() => updatePassword(user, newPass))
-      .then(() => alert("✅ Contraseña actualizada."))
+      .then(() => alert("✅ Contraseña actualizada correctamente."))
       .catch(err => alert("❌ Error: " + err.message));
   }
 
-  // Hacerlas accesibles para los botones del menú
+  // Hacemos las funciones accesibles para los botones del menú.
   window.cerrarSesion = cerrarSesion;
   window.cambiarPasswordDirectamente = cambiarPasswordDirectamente;
   
@@ -826,8 +867,11 @@ loadExternalUIData();
             localStorage.setItem('auralink-last-activity', Date.now());
         }
     };
+    // Usamos 'true' para capturar los eventos en la fase de captura, más fiable.
     window.addEventListener('click', reset, true);
     window.addEventListener('keydown', reset, true);
+    window.addEventListener('mousemove', reset, true);
+    window.addEventListener('touchstart', reset, true);
     
     setInterval(() => {
       const last = parseInt(localStorage.getItem('auralink-last-activity'), 10);
@@ -836,7 +880,7 @@ loadExternalUIData();
         alert("La sesión ha expirado por inactividad.");
         cerrarSesion();
       }
-    }, 60000);
+    }, 60000); // Revisa cada minuto
   }
 
   // --- LÓGICA DE VERIFICACIÓN DE SESIÓN (EL "GUARDIÁN" DE LA PÁGINA) ---
@@ -844,24 +888,23 @@ loadExternalUIData();
     const savedToken = localStorage.getItem("auralink-session-token");
 
     // Condición para ser expulsado:
-    // 1. No hay usuario de Firebase autenticado.
-    // 2. No hay token guardado en el navegador.
     if (!user || !savedToken) {
       console.log("⛔ Acceso denegado: no hay sesión válida. Redirigiendo a login.");
+      // Limpiamos por si quedaba algo
+      localStorage.clear();
       window.location.href = "index.html";
       return;
     }
 
-    // Si hay usuario y token, verificamos que coincidan con la base de datos
+    // Si hay usuario y token, verificamos que coincidan con la base de datos.
     const userRef = ref(db, `usuariosConectados/${user.uid}`);
     const snapshot = await get(userRef);
 
     if (!snapshot.exists() || snapshot.val().token !== savedToken) {
-      // El token en la DB no existe o no coincide. Significa que otra sesión se inició
-      // o que esta sesión es inválida.
+      // El token en la DB no existe o no coincide.
       console.log("⛔ Acceso denegado: token de sesión inválido. Redirigiendo a login.");
       localStorage.clear(); // Limpiamos el token inválido
-      await signOut(auth);
+      await signOut(auth); // Cerramos la sesión de Firebase si existía
       window.location.href = "index.html";
       return;
     }
@@ -870,18 +913,18 @@ loadExternalUIData();
     // Si llegamos aquí, el usuario tiene permiso para estar en la página.
     console.log("✅ Sesión verificada. ¡Bienvenido!");
 
-    // 1. Establecemos la regla de limpieza al cerrar la pestaña
+    // 1. Establecemos la regla de limpieza al cerrar la pestaña.
     onDisconnect(userRef).remove();
 
-    // 2. Iniciamos la lógica de la aplicación
-    iniciarReproductor();
+    // 2. Iniciamos la lógica de la aplicación.
+    // (Asegúrate de tener la función iniciarReproductor() en el script no-módulo).
+    if (typeof iniciarReproductor === 'function') {
+      iniciarReproductor();
+    }
     initActivityListeners();
-    
-    // (Asegúrate de que la función iniciarReproductor() esté en el script del reproductor)
+    startSessionWatcher(user); // Iniciamos el vigilante de sesión.
   });
 
-  // El resto de la lógica de tu menú de opciones se puede quedar igual.
-  // Solo asegúrate de llamar a las funciones `cerrarSesion` y `cambiarPasswordDirectamente`.
 </script>
 </body>
 </html>

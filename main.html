@@ -546,15 +546,19 @@ backdrop-filter: blur(var(--blur-amount));
     }
   }
 
-  function renderPlaylist() {
-    playlistEl.innerHTML = '';
-    songs.forEach((song, i) => {
-      const li = document.createElement('li');
-      li.dataset.index = i;
-      li.innerHTML = `<div class="playlist-title">${song.title}</div><div class="playlist-artist">${song.artist}</div>`;
-      li.addEventListener('click', () => playSong(i));
-      playlistEl.appendChild(li);
-    });
+function renderPlaylist(list = songs) {
+playlistEl.innerHTML = '';
+list.forEach(song => {
+const index = songs.findIndex(s =>
+s.title === song.title && s.artist === song.artist
+);
+
+const li = document.createElement('li');
+li.dataset.index = index;
+li.innerHTML = `<div class="playlist-title">${song.title}</div><div class="playlist-artist">${song.artist}</div>`;
+li.addEventListener('click', () => playSong(index));
+playlistEl.appendChild(li);
+});
   }
 
   function updatePlayingClass() {
@@ -636,13 +640,23 @@ backdrop-filter: blur(var(--blur-amount));
     currentTimeEl.textContent = formatTime(audioEl.currentTime);
     seekSlider.value = audioEl.currentTime;
   }
+
   
-  searchInput.addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    document.querySelectorAll('#playlist li').forEach(item => {
-      item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'flex' : 'none';
-    });
-  });
+searchInput.addEventListener('input', (e) => {
+const searchTerm = e.target.value.toLowerCase();
+
+const seen = new Set();
+const filtered = songs.filter((song, index) => {
+const key = `${song.artist.toLowerCase()} - ${song.title.toLowerCase()}`;
+if (seen.has(key)) return false;
+seen.add(key);
+return song.title.toLowerCase().includes(searchTerm) ||
+song.artist.toLowerCase().includes(searchTerm);
+});
+
+renderPlaylist(filtered);
+});
+  
 
   document.getElementById('close-notice')?.addEventListener('click', () => {
     document.getElementById('notice-bar').style.display = 'none';

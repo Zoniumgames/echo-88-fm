@@ -559,13 +559,17 @@ li.innerHTML = `<div class="playlist-title">${song.title}</div><div class="playl
 li.addEventListener('click', () => playSong(index));
 playlistEl.appendChild(li);
 });
+
+  updatePlayingClass():
   }
 
   function updatePlayingClass() {
-    document.querySelectorAll('#playlist li').forEach((li, i) => {
-      li.classList.toggle('playing', i === currentIndex);
-    });
+document.querySelectorAll('#playlist li').forEach(li => {
+const index = parseInt(li.dataset.index, 10);
+li.classList.toggle('playing', index === currentIndex);
+});
   }
+  
 
   function prepareSong(index) {
     if (index < 0 || index >= songs.length) return;

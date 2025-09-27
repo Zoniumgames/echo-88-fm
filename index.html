@@ -1,1030 +1,326 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuraLink</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="fallback.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        /* Basic Styling */
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1f1c2c, #928DAB);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: white;
-            padding: 2rem;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Animated Background */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, #4c00ff, #8a2be2, #00bfff, #20b2aa, #ff4500);
-            background-size: 400% 400%;
-            animation: gradient-animation 20s ease infinite;
-            z-index: -1;
-            opacity: 0.8;
-            transition: opacity 0.5s ease;
-        }
-
-        body.no-animations::before {
-            animation: none;
-            background-position: 50% 50%;
-        }
-
-        @keyframes gradient-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Glassmorphism Components */
-        .glass-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 1.5rem;
-            padding: 2.5rem;
-        }
-
-        .glass-input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
-            color: white;
-        }
-
-        .glass-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .glass-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .glass-btn:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
-        
-        .song-item {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            transition: all 0.2s ease-in-out;
-            border-radius: 0.5rem;
-        }
-
-        body.no-animations .song-item:hover {
-            transform: none;
-        }
-
-        .song-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .song-item.active {
-            background: rgba(255, 255, 255, 0.25);
-            border: 1px solid #ffffff33;
-        }
-        
-        audio {
-            display: none;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            border: 2px solid transparent;
-            background-clip: content-box;
-        }
-        
-        /* Volume and Progress Bar styling (improved) */
-        .progress-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px; /* Initial height */
-            background: rgba(255, 255, 255, 0.2);
-            outline: none;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: height 0.2s ease, background-color 0.2s ease;
-        }
-
-        .progress-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        
-        .progress-slider:hover {
-            height: 12px;
-            background: rgba(255, 255, 255, 0.4);
-        }
-
-        .volume-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            outline: none;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: height 0.2s ease, background-color 0.2s ease;
-        }
-        
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-
-        .volume-slider:hover {
-            height: 12px;
-            background: rgba(255, 255, 255, 0.4);
-        }
-
-        .menu-pop-up {
-            transform: scale(0.95);
-            opacity: 0;
-            pointer-events: none;
-            transition: transform 0.2s ease, opacity 0.2s ease;
-        }
-
-        .menu-pop-up.show {
-            transform: scale(1);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        .song-title {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-
-        .song-item:hover .song-title {
-            animation: marquee 8s linear infinite;
-        }
-
-        body.no-animations .song-item:hover .song-title {
-            animation: none;
-        }
-
-        @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-100%); }
-        }
-        
-        /* Custom Switch for Animations */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #8A2BE2;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-        
-        .w-playlist {
-            width: 33.333333%;
-            min-width: 300px;
-        }
-
-        .w-full-player {
-            width: 100%;
-        }
-        
-        /* Login button animation */
-        #login-btn.loading {
-            position: relative;
-            color: transparent;
-            pointer-events: none;
-        }
-        
-        #login-btn.loading:after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin-top: -10px;
-            margin-left: -10px;
-            border-radius: 50%;
-            border: 2px solid white;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        
-        .playlist-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-        
-        .main-player-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-    </style>
-</head>
-<body class="bg-gray-900 flex justify-center items-center min-h-screen">
-    <!-- Login Form Container -->
-    <div id="login-container" class="glass-container w-96 p-8 flex flex-col items-center">
-        <h2 class="text-4xl font-bold mb-2">AuraLink</h2>
-        <p class="text-sm text-gray-400 mb-6 text-center">Acceso restringido, solo usuarios preregistrados</p>
-        <p id="login-message" class="text-red-400 text-center mb-4 hidden"></p>
-        <div class="w-full space-y-4">
-            <div class="relative">
-                <input type="text" id="email" placeholder="Correo electrónico" class="w-full glass-input px-5 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400 pl-12">
-                <i class="fas fa-at absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300"></i>
-            </div>
-            <div class="relative">
-                <input type="password" id="password" placeholder="Contraseña" class="w-full glass-input px-5 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400 pl-12">
-                <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300"></i>
-                <button id="toggle-password-btn" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white focus:outline-none">
-                    <i id="password-icon" class="fas fa-eye"></i>
-                </button>
-            </div>
-        </div>
-        <button id="login-btn" class="w-full glass-btn py-3 rounded-full font-bold mt-6 hover:bg-white hover:text-gray-900 transition-colors">Iniciar Sesión</button>
-    </div>
-
-    <!-- Main App Container -->
-    <div id="app" class="hidden w-[1000px] h-[700px] glass-container flex p-6 relative">
-        <!-- Playlist View -->
-        <div id="playlist-view" class="w-playlist flex flex-col pr-6 transition-all duration-300 ease-in-out">
-            <!-- Playlist Header and Search Bar (fixed) -->
-            <div class="playlist-header flex items-center mb-4">
-                <h2 class="text-2xl font-semibold">Lista de Reproducción</h2>
-            </div>
-            <div class="relative mb-4">
-                <input type="text" id="search-input" placeholder="Buscar canción o artista..." class="w-full glass-input px-5 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400 pl-12">
-                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300"></i>
-            </div>
-            <!-- Music List (scrollable) -->
-            <div id="music-list" class="flex-1 custom-scrollbar overflow-y-auto space-y-2">
-                <div id="loading-spinner" class="flex justify-center items-center h-full">
-                    <i class="fas fa-spinner fa-spin text-4xl"></i>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Main Player Area -->
-        <div id="main-player-area" class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header (User Menu) -->
-            <div class="relative w-full flex justify-between items-center pb-6">
-                <!-- Botón de lista ahora en el área del reproductor -->
-                <div class="flex items-center space-x-4">
-                    <button id="toggle-playlist-btn" class="text-white text-lg hover:text-gray-300 transition-colors">
-                        <i id="toggle-icon" class="fas fa-arrow-left"></i>
-                    </button>
-                    <h1 class="text-3xl font-bold">AuraLink</h1>
-                </div>
-
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <button id="user-menu-btn" class="text-white text-xl p-3 rounded-full hover:bg-white/10 transition">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                        <div id="user-menu" class="menu-pop-up absolute top-full right-0 mt-2 w-56 bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg z-50 p-2">
-                            <button id="mode-btn" class="w-full text-left py-2 px-4 rounded-lg text-sm hover:bg-white/20 transition flex items-center space-x-2">
-                                <i class="fas fa-broadcast-tower"></i>
-                                <span id="mode-text">Modo Radio</span>
-                            </button>
-                            <button id="change-password-btn" class="w-full text-left py-2 px-4 rounded-lg text-sm hover:bg-white/20 transition flex items-center space-x-2">
-                                <i class="fas fa-key"></i>
-                                <span>Cambiar Contraseña</span>
-                            </button>
-                            <hr class="my-2 border-gray-600/50">
-                            <!-- Animation Control -->
-                            <div class="flex items-center justify-between py-2 px-4 text-sm">
-                                <span>Desactivar animaciones</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="animation-switch" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <button id="random-bg-btn" class="w-full text-left py-2 px-4 rounded-lg text-sm hover:bg-white/20 transition flex items-center space-x-2">
-                                <i class="fas fa-sync-alt"></i>
-                                <span>Fondo Aleatorio</span>
-                            </button>
-                            <hr class="my-2 border-gray-600/50">
-                            <button id="logout-btn" class="w-full text-left py-2 px-4 rounded-lg text-sm text-red-400 hover:bg-red-400/20 transition flex items-center space-x-2">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Cerrar Sesión</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Main Player Content (Radio or Playlist) -->
-            <div id="player-content-container" class="flex-1 flex flex-col justify-between items-center p-8">
-                <!-- Radio View -->
-                <div id="radio-view" class="flex-1 flex flex-col justify-center items-center p-8 hidden">
-                    <h2 class="text-3xl font-bold mb-4">Sitio en construcción...</h2>
-                    <p class="text-gray-300 mb-6">Pronto podrás disfrutar de música en modo radio.</p>
-                </div>
-
-                <!-- Now Playing View -->
-                <div id="now-playing-view" class="flex-1 text-center w-full flex flex-col justify-center items-center">
-                    <div id="player-cover-container" class="flex-shrink-0 w-48 h-48 mx-auto mb-4 bg-gray-700 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-music text-6xl text-white"></i>
-                    </div>
-                    <div id="player-song-title" class="font-bold text-2xl mb-1">No hay música</div>
-                    <div id="player-artist" class="text-md text-gray-300">Selecciona una canción</div>
-                </div>
-
-                <!-- Progress Bar -->
-                <div id="progress-bar-section" class="w-full mt-auto mb-8">
-                    <div class="flex items-center space-x-2 text-xs mb-2">
-                        <span id="current-time" class="min-w-[40px] text-right">0:00</span>
-                        <div id="progress-bar-container" class="w-full h-1 bg-gray-600 rounded-full cursor-pointer hover:h-2 transition-all">
-                            <div id="progress-bar" class="h-full bg-white rounded-full transition-all"></div>
-                        </div>
-                        <span id="duration" class="min-w-[40px]">0:00</span>
-                    </div>
-                </div>
-
-                <!-- Playback Controls -->
-                <div id="playback-controls" class="flex items-center space-x-8">
-                    <button id="prev-btn" class="text-white text-xl hover:text-gray-300 transition-colors">
-                        <i class="fas fa-backward"></i>
-                    </button>
-                    <button id="play-pause-btn" class="glass-btn p-5 rounded-full shadow-lg text-2xl">
-                        <i id="play-icon" class="fas fa-play"></i>
-                        <i id="pause-icon" class="fas fa-pause hidden"></i>
-                    </button>
-                    <button id="next-btn" class="text-white text-xl hover:text-gray-300 transition-colors">
-                        <i class="fas fa-forward"></i>
-                    </button>
-                </div>
-                
-                <!-- Volume Controls -->
-                <div id="volume-controls" class="flex items-center space-x-2 mt-4 w-full justify-center">
-                    <i class="fas fa-volume-down text-gray-400"></i>
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.4" class="w-48 h-1 rounded-full cursor-pointer appearance-none bg-gray-600 volume-slider">
-                    <i class="fas fa-volume-up text-gray-400"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auralink - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+  :root {
+    --color-player-bg: rgba(60, 60, 60, 0.7);
+    --color-glass-bg: rgba(35, 35, 45, 0.5);
+    --color-glass-border: rgba(255, 255, 255, 0.2);
+    --color-text-primary: hsl(220, 30%, 98%);
+    --color-text-secondary: hsl(220, 20%, 75%);
+    --color-accent-primary: hsl(260, 100%, 85%);
+    --color-accent-primary-trans: hsla(260, 100%, 85%, 0.2);
+    --color-accent-hover: hsl(260, 100%, 90%);
+    --color-shadow: rgba(0, 0, 0, 0.2);
     
-    <!-- Password Change Modal -->
-    <div id="password-modal" class="modal-container hidden">
-        <div class="modal-content flex flex-col items-center">
-            <h3 class="text-xl font-bold mb-4">Cambiar Contraseña</h3>
-            <p id="password-change-message" class="text-red-400 text-sm mb-4 hidden"></p>
-            <input type="password" id="new-password" placeholder="Nueva contraseña" class="w-full glass-input px-4 py-2 rounded-full mb-4">
-            <input type="password" id="confirm-password" placeholder="Confirmar contraseña" class="w-full glass-input px-4 py-2 rounded-full mb-6">
-            <div class="flex space-x-4">
-                <button id="change-password-submit-btn" class="glass-btn px-6 py-2 rounded-full font-bold">Confirmar</button>
-                <button id="password-modal-close-btn" class="glass-btn px-6 py-2 rounded-full font-bold">Cancelar</button>
-            </div>
-        </div>
+    --blur-amount: 15px;
+
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 32px;
+    --border-radius-circle: 50%;
+
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+  }
+
+  html, body { height: 100%; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    color: var(--color-text-primary);
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex; flex-direction: column; min-height: 100vh;
+    overflow: hidden; position: relative; background: #111; z-index: 0;
+  }
+  body::before, body::after {
+    content: ""; position: fixed; inset: 0; background-size: cover;
+    z-index: -3; box-shadow: inset 0 0 0 10000px rgba(10, 5, 20, 0.4);
+  }
+  body::before { background-image: url(''); background-position: left center; mask-image: linear-gradient(to right, black 40%, transparent 100%); }
+  body::after { background-image: url('pexels-steve-29708308.jpg'); background-position: right center; z-index: -2; }
+  
+  header {
+    padding: var(--spacing-sm) var(--spacing-md); display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-md);
+    z-index: 10; flex-shrink: 0; border-bottom: 1px solid var(--color-glass-border);
+    background: var(--color-glass-bg); 
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
+  }
+  .logo-wrapper { display: flex; flex-direction: column; align-items: flex-start; }
+  .auralink {
+      font-size: 28px; font-weight: 700; color: white; letter-spacing: 1px;
+      background: linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 80%, rgba(255,255,255,0.05) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;
+  }
+  .by-zonium {
+      font-size: 10px; font-weight: 300; color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 1px; margin-top: -8px;
+  }
+  #welcome-screen .logo-wrapper .by-zonium { margin-top: 4px; }
+  
+  nav { display: flex; gap: var(--spacing-xs); flex-wrap: wrap; justify-content: flex-end; }
+  nav button {
+    background: transparent; border: 1px solid transparent; color: var(--color-text-secondary);
+    font-weight: 500; padding: 0.5rem 1rem; border-radius: var(--border-radius-lg);
+    cursor: pointer; transition: all var(--transition-speed) var(--transition-ease);
+  }
+  nav button:hover {
+    background: rgba(255,255,255,0.1); color: var(--color-text-primary);
+    border-color: var(--color-glass-border); transform: translateY(-2px);
+  }
+  
+  main {
+    flex: 1; overflow: hidden; padding: var(--spacing-md);
+    display: flex; flex-direction: column; align-items: center; padding-bottom: 120px;
+  }
+  
+  .search-container {
+    position: relative; width: 100%; max-width: 500px; display: flex;
+    align-items: center; padding: var(--spacing-xs); border-radius: var(--border-radius-md);
+    background: var(--color-glass-bg); backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
+    box-shadow: 0 4px 25px var(--color-shadow); margin: 0 auto;
+  }
+  #search-input {
+    flex-grow: 1; border: none; background: transparent; color: var(--color-text-primary);
+    padding: var(--spacing-xs) var(--spacing-sm); font-size: 1rem; font-weight: 500; outline: none;
+  }
+  #search-input::placeholder { color: var(--color-text-secondary); font-weight: 400; }
+  .search-icon { color: var(--color-text-secondary); margin-right: var(--spacing-xs); }
+
+  #floating-player-container {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: center; align-items: flex-end;
+    gap: var(--spacing-sm); padding: 0 var(--spacing-md) var(--spacing-md);
+    pointer-events: none;
+  }
+
+  #player-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--spacing-md); padding: 10px var(--spacing-md);
+    flex-grow: 1; max-width: 950px; min-height: 70px;
+    border-radius: var(--border-radius-md); pointer-events: auto;
+    background: var(--color-player-bg); backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border);
+    box-shadow: 0 4px 25px var(--color-shadow);
+    background: var(--color-glass-bg); 
+    backdrop-filter: blur(var(--blur-amount));
+  }
+
+  .player-section { display: flex; align-items: center; }
+  .song-info { flex: 1; min-width: 150px; justify-content: flex-start; }
+  .player-core { flex: 2; flex-direction: column; align-items: center; gap: 4px; }
+  .visualizer { flex: 1; min-width: 150px; justify-content: flex-end; }
+  
+  .album-art-container { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+  .vinyl-disc {
+    position: absolute; width: 100%; height: 100%; border-radius: 50%;
+    background-image: url('5856b3da4f6ae202fedf2794.png'); background-size: cover;
+    animation: spin 4s linear infinite; animation-play-state: paused; aspect-ratio: 1 / 1;
+  }
+  #album-art {
+    position: absolute; top: 15%; left: 15%; width: 70%; height: 70%;
+    border-radius: 50%; object-fit: cover;
+    display: none;
+  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .current-song-details {
+    display: flex; flex-direction: column; overflow: hidden; padding-left: var(--spacing-sm);
+  }
+  .current-song-details .title, .current-song-details .artist {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .current-song-details .title { font-weight: 500; font-size: 0.9rem; }
+  .current-song-details .artist { font-size: 0.8rem; color: var(--color-text-secondary); }
+  
+  .main-controls { display: flex; gap: var(--spacing-md); align-items: center; }
+  .control-button { background: none; border: none; color: var(--color-text-secondary); font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease-out; }
+  .control-button.main-play-pause { font-size: 2rem; color: var(--color-text-primary); }
+  .control-button:hover { color: var(--color-text-primary); }
+  
+  .progress-bar-container {
+    width: 100%; display: flex; align-items: center; gap: var(--spacing-xs);
+    font-size: 0.75rem; color: var(--color-text-secondary);
+  }
+  #current-time, #total-time { font-variant-numeric: tabular-nums; }
+  
+  
+  #welcome-screen { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.6s ease-out; background: rgba(10, 5, 20, 0.6); backdrop-filter: blur(40px); }
+  #welcome-screen .logo-wrapper { opacity: 0; transform: translateY(20px); animation: welcome-logo-pop 1s ease-out forwards; }
+  @keyframes welcome-logo-pop { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  #welcome-form { margin-top: 2.5rem; display: none; flex-direction: column; gap: 1.5rem; align-items: center; animation: fade-in 1s ease-out forwards 0.5s; opacity: 0; padding: 2rem; border-radius: var(--border-radius-md); background: var(--color-glass-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(var(--blur-amount)); border: 1px solid var(--color-glass-border); box-shadow: 0 4px 25px var(--color-shadow); }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  #welcome-form input { padding: 0.8rem 1rem; border-radius: var(--border-radius-sm); border: 1px solid var(--color-glass-border); font-size: 1rem; width: 250px; background: rgba(255,255,255, 0.1); color: var(--color-text-primary); outline: none; transition: all 0.3s ease; }
+  #welcome-form input:focus { border-color: var(--color-accent-primary); box-shadow: 0 0 10px var(--color-accent-primary-trans); }
+  #welcome-form button { background: var(--color-accent-primary); color: #111; border: none; padding: 0.8rem 1.5rem; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%; }
+  #welcome-form button:hover { background: var(--color-accent-hover); }
+
+  #notice-bar {
+    width: 100%; background: var(--color-accent-primary-trans); color: var(--color-text-primary);
+    overflow: hidden; height: 2.2rem; position: relative; z-index: 9;
+    border-bottom: 1px solid var(--color-accent-primary); backdrop-filter: blur(5px);
+  }
+  .notice-content {
+    display: inline-block; white-space: nowrap; padding-left: 100%;
+    animation: scroll-left 15s linear infinite; font-weight: 600; line-height: 2.2rem;
+  }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+  #close-notice {
+    position: absolute; right: 10px; top: 4px; background: transparent; border: none;
+    color: white; font-size: 1.1rem; cursor: pointer;
+  }
+  
+  #recent-box { display: none; }
+  
+  @media (max-width: 980px) { #player-bar { max-width: 100%; } }
+  @media (max-width: 768px) {
+    header { flex-direction: column; align-items: center; }
+    header .logo-wrapper, header nav { text-align: center; }
+    header .search-container { order: 3; width: 100%; margin: var(--spacing-sm) 0 0; }
+    nav { order: 2; }
+    
+    main { padding-bottom: 220px; }
+    
+    #floating-player-container { flex-direction: column; padding: var(--spacing-sm); gap: var(--spacing-sm); }
+    #player-bar {
+      flex-direction: column; max-width: 100%; width: 100%;
+      min-height: auto; gap: var(--spacing-sm); padding: var(--spacing-sm);
+    }
+    .player-section { width: 100%; }
+    .song-info { justify-content: center; text-align: center; }
+    .visualizer { display: none; }
+    #volume-orb-container { display: none; }
+  }
+  
+  
+  
+.menu-container {
+  position: relative;
+}
+
+.options-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.options-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 8px;
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+  z-index: 999;
+  min-width: 160px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+.options-menu li {
+  padding: 10px 16px;
+  cursor: pointer;
+  color: white;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.options-menu li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+</style>
+</head>
+<body>
+  <div id="welcome-screen">
+    <div class="logo-wrapper">
+      <div class="auralink">Auralink</div>
+      <div class="by-zonium">by Zonium</div>
     </div>
+    <div id="welcome-form">
+      <input type="text" id="username-input" placeholder="Usuario" />
+      <input type="password" id="password-input" placeholder="Contraseña" />
+      <button id="enter-button">Entrar</button>
+      <p id="login-error" style="display: none;"></p>
+    </div>
+  </div>
 
-    <!-- Main Script -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged,
-            updatePassword,
-        } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-        
-        // --- Firebase Config ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDvzpt-_e4LPuhTIrZyjvJ0-3umeG42gxQ",
-            authDomain: "auralink-login-system.firebaseapp.com",
-            databaseURL: "https://auralink-login-system-default-rtdb.firebaseio.com",
-            projectId: "auralink-login-system",
-            storageBucket: "auralink-login-system.firebasestorage.app",
-            messagingSenderId: "994847781588",
-            appId: "1:994847781588:web:a549c81619a7ebcd0bc141",
-            measurementId: "G-6C9T47F3CG"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+  <!-- Firebase -->
+  <!-- En login.html, dentro del <script type="module"> -->
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+  import { getDatabase, ref, set, remove } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
-        // --- DOM Elements ---
-        const loginContainer = document.getElementById('login-container');
-        const appContainer = document.getElementById('app');
-        const loginBtn = document.getElementById('login-btn');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginMessage = document.getElementById('login-message');
-        const togglePasswordBtn = document.getElementById('toggle-password-btn');
-        const passwordIcon = document.getElementById('password-icon');
+  const firebaseConfig = {
+    apiKey: "AIzaSyDvzpt-_e4LPuhTIrZyjvJ0-3umeG42gxQ",
+    authDomain: "auralink-login-system.firebaseapp.com",
+    projectId: "auralink-login-system",
+    storageBucket: "auralink-login-system.appspot.com",
+    messagingSenderId: "994847781588",
+    appId: "1:994847781588:web:a549c81619a7ebcd0bc141"
+  };
 
-        const musicList = document.getElementById('music-list');
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const progressBarContainer = document.getElementById('progress-bar-container');
-        const currentTimeEl = document.getElementById('current-time');
-        const durationEl = document.getElementById('duration');
-        const playerSongTitle = document.getElementById('player-song-title');
-        const playerArtist = document.getElementById('player-artist');
-        const playIcon = document.getElementById('play-icon');
-        const pauseIcon = document.getElementById('pause-icon');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const volumeSlider = document.getElementById('volume-slider');
-        const playlistView = document.getElementById('playlist-view');
-        const radioView = document.getElementById('radio-view');
-        const modeBtn = document.getElementById('mode-btn');
-        const modeText = document.getElementById('mode-text');
-        const nowPlayingView = document.getElementById('now-playing-view');
-        const playbackControls = document.getElementById('playback-controls');
-        const volumeControls = document.getElementById('volume-controls');
-        const progressBarSection = document.getElementById('progress-bar-section');
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-        const userMenuBtn = document.getElementById('user-menu-btn');
-        const userMenu = document.getElementById('user-menu');
-        const changePasswordBtn = document.getElementById('change-password-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const passwordModal = document.getElementById('password-modal');
-        const passwordModalCloseBtn = document.getElementById('password-modal-close-btn');
-        const newPasswordInput = document.getElementById('new-password');
-        const confirmPasswordInput = document.getElementById('confirm-password');
-        const passwordChangeSubmitBtn = document.getElementById('change-password-submit-btn');
-        const passwordChangeMessage = document.getElementById('password-change-message');
-        const togglePlaylistBtn = document.getElementById('toggle-playlist-btn');
-        const toggleIcon = document.getElementById('toggle-icon');
-        const searchInput = document.getElementById('search-input');
-        const animationSwitch = document.getElementById('animation-switch');
-        const randomBgBtn = document.getElementById('random-bg-btn');
-        
-        // --- Modal Functions ---
-        const showPasswordModal = () => {
-            passwordModal.classList.remove('hidden');
-        };
+  const loginBtn = document.getElementById('enter-button');
+  const usernameInput = document.getElementById('username-input');
+  const passwordInput = document.getElementById('password-input');
+  const errorEl = document.getElementById('login-error');
 
-        const hidePasswordModal = () => {
-            passwordModal.classList.add('hidden');
-            newPasswordInput.value = '';
-            confirmPasswordInput.value = '';
-            passwordChangeMessage.classList.add('hidden');
-        };
+  loginBtn.addEventListener('click', async () => {
+    const email = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
 
-        // --- App State and Music Logic ---
-        const musicRepos = [
-            'zoniumgames/music-pack1-server',
-            'zoniumgames/music-pack2-server',
-            'zoniumgames/music-pack3-server',
-            'zoniumgames/music-pack4-server',
-            'zoniumgames/music-pack5-server',
-            'zoniumgames/music-pack6-server',
-            'zoniumgames/music-pack7-server'
-        ];
-        
-        // Pre-defined animated gradients to switch between
-        const animatedGradients = [
-            'linear-gradient(45deg, #4c00ff, #8a2be2, #00bfff, #20b2aa, #ff4500)', // Default
-            'linear-gradient(-45deg, #FF6B6B, #FFE66D, #5D8AA8, #A9E4D7)',
-            'linear-gradient(135deg, #1A2980, #26D0CE)',
-            'linear-gradient(90deg, #F8CDDA, #1D2B64)',
-            'linear-gradient(225deg, #D4145A, #FBB03B)'
-        ];
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Verificando...";
+    errorEl.style.display = 'none';
 
-        let allSongs = [];
-        let currentSongIndex = -1;
-        const audio = new Audio();
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const userRef = ref(db, `usuariosConectados/${user.uid}`);
 
-        const formatTime = (seconds) => {
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-        };
+      await remove(userRef);
 
-        /**
-         * Parses the filename to extract the artist and song title, and cleans up special characters.
-         * @param {string} filename The full filename (e.g., "Artist - Song_Title.mp3").
-         * @param {string} repoName The name of the repository (e.g., "music-pack1").
-         * @returns {{artist: string, title: string}} The parsed artist and title.
-         */
-        const parseFilename = (filename, repoName) => {
-            // Remove file extension and replace all underscores with spaces for cleaner titles
-            let cleanFilename = filename.replace(/\.(mp3|wav)$/, '').replace(/_/g, ' ');
+      const newSessionToken = Date.now().toString();
+      await set(userRef, {
+        token: newSessionToken,
+        timestamp: newSessionToken
+      });
 
-            // Normalize title by removing any leading or trailing hyphens or spaces
-            const normalizedFilename = cleanFilename.replace(/^[- ]+/, '').trim();
-            
-            // Split by common separators to find artist and title
-            const parts = normalizedFilename.split(/ - | \- /);
-            
-            if (parts.length >= 2) {
-                const artist = parts[0].trim();
-                const title = parts.slice(1).join(' - ').trim();
-                return { artist, title };
-            }
-            
-            return { artist: repoName.replace('-', ' '), title: normalizedFilename };
-        };
+      localStorage.setItem("auralink-session-token", newSessionToken);
+      localStorage.setItem("auralink-user-email", email);
 
-        const loadMusic = async () => {
-            loadingSpinner.classList.remove('hidden');
-            allSongs = [];
+      window.location.href = "main.html";
 
-            const fetchPromises = musicRepos.map(repo => {
-                const apiUrl = `https://api.github.com/repos/${repo}/contents/`;
-                const repoName = repo.split('/')[1].replace('-server', '');
-                return fetch(apiUrl)
-                    .then(response => {
-                        if (response.status === 403) {
-                            throw new Error('GitHub API rate limit exceeded.');
-                        }
-                        if (!response.ok) {
-                            throw new Error(`Error fetching from ${repo}: ${response.statusText}`);
-                        }
-                        return response.json();
-                    })
-                    .then(files => {
-                        const musicFiles = files.filter(file => 
-                            file.type === 'file' && (file.name.endsWith('.mp3') || file.name.endsWith('.wav'))
-                        );
-                        
-                        return musicFiles.map(file => {
-                            const { artist, title } = parseFilename(file.name, repoName);
-                            return {
-                                title: title,
-                                artist: artist, 
-                                url: file.download_url
-                            };
-                        });
-                    })
-                    .catch(error => {
-                        console.error(`Error al cargar música del repositorio ${repo}:`, error);
-                        // showMessage(`Error al cargar música del repositorio ${repo}.`);
-                        return [];
-                    });
-            });
-
-            try {
-                const results = await Promise.all(fetchPromises);
-                allSongs = results.flat();
-                allSongs.sort((a, b) => a.title.localeCompare(b.title));
-                
-                if (allSongs.length === 0) {
-                    // showMessage("No se encontraron canciones en los repositorios.");
-                } else {
-                    renderMusicList(allSongs);
-                }
-            } catch (error) {
-                console.error('Error general al cargar la música:', error);
-                // showMessage(error.message);
-            } finally {
-                loadingSpinner.classList.add('hidden');
-            }
-        };
-
-        const renderMusicList = (songs) => {
-            musicList.innerHTML = '';
-            if (songs.length === 0) {
-                musicList.innerHTML = '<p class="text-center text-gray-400">No se encontraron resultados.</p>';
-                return;
-            }
-
-            songs.forEach((song, index) => {
-                const songItem = document.createElement('div');
-                songItem.className = 'song-item flex items-center justify-between p-4 cursor-pointer mb-2';
-                songItem.setAttribute('data-index', allSongs.indexOf(song));
-                
-                songItem.innerHTML = `
-                    <div class="flex items-center space-x-4 flex-1 overflow-hidden">
-                        <div class="flex-shrink-0 w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center">
-                             <i class="fas fa-music text-lg text-white"></i>
-                        </div>
-                        <div class="flex-1 overflow-hidden">
-                            <div class="font-semibold text-lg song-title">${song.title}</div>
-                            <div class="text-sm text-gray-400">${song.artist}</div>
-                        </div>
-                    </div>
-                `;
-                musicList.appendChild(songItem);
-            });
-        };
-
-        const playSong = (index) => {
-            if (index < 0 || index >= allSongs.length) return;
-            currentSongIndex = index;
-            const song = allSongs[currentSongIndex];
-
-            // Fix the AbortError by pausing before changing the source
-            if (!audio.paused) {
-                audio.pause();
-                audio.src = ''; // This forces a full stop
-            }
-
-            audio.src = song.url;
-            audio.play();
-            
-            playerSongTitle.textContent = song.title;
-            playerArtist.textContent = song.artist;
-            
-            updatePlayPauseIcon(true);
-            updateActiveSong();
-        };
-
-        const updatePlayPauseIcon = (isPlaying) => {
-            if (isPlaying) {
-                playIcon.classList.add('hidden');
-                pauseIcon.classList.remove('hidden');
-            } else {
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-            }
-        };
-
-        const updateActiveSong = () => {
-            document.querySelectorAll('.song-item').forEach((item) => {
-                item.classList.remove('active');
-                if (parseInt(item.getAttribute('data-index')) === currentSongIndex) {
-                    item.classList.add('active');
-                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            });
-        };
-
-        const togglePlayPause = () => {
-            if (audio.paused) {
-                audio.play();
-            } else {
-                audio.pause();
-            }
-        };
-
-        const playNextSong = () => {
-            const nextIndex = (currentSongIndex + 1) % allSongs.length;
-            playSong(nextIndex);
-        };
-
-        const playPrevSong = () => {
-            const prevIndex = (currentSongIndex - 1 + allSongs.length) % allSongs.length;
-            playSong(prevIndex);
-        };
-
-        const initMusicApp = () => {
-            loadMusic();
-            
-            // --- Event Listeners ---
-            passwordModalCloseBtn.addEventListener('click', hidePasswordModal);
-            
-            // --- Player Controls ---
-            audio.volume = volumeSlider.value;
-            volumeSlider.addEventListener('input', () => {
-                audio.volume = volumeSlider.value;
-            });
-            audio.addEventListener('play', () => updatePlayPauseIcon(true));
-            audio.addEventListener('pause', () => updatePlayPauseIcon(false));
-            audio.addEventListener('ended', () => playNextSong());
-            playPauseBtn.addEventListener('click', togglePlayPause);
-            nextBtn.addEventListener('click', playNextSong);
-            prevBtn.addEventListener('click', playPrevSong);
-            
-            musicList.addEventListener('click', (e) => {
-                const songItem = e.target.closest('.song-item');
-                if (songItem) {
-                    const index = parseInt(songItem.getAttribute('data-index'));
-                    playSong(index);
-                }
-            });
-
-            audio.addEventListener('timeupdate', () => {
-                const progressPercent = (audio.currentTime / audio.duration) * 100;
-                progressBar.style.width = `${progressPercent}%`;
-                currentTimeEl.textContent = formatTime(audio.currentTime);
-            });
-
-            audio.addEventListener('loadedmetadata', () => {
-                durationEl.textContent = formatTime(audio.duration);
-            });
-            
-            progressBarContainer.addEventListener('click', (e) => {
-                if (audio.duration) {
-                    const width = progressBarContainer.clientWidth;
-                    const clickX = e.offsetX;
-                    const duration = audio.duration;
-                    audio.currentTime = (clickX / width) * duration;
-                } else {
-                    // showMessage("Primero selecciona una canción.");
-                }
-            });
-
-            // --- UI Controls (User Menu, Radio Mode, etc.) ---
-            userMenuBtn.addEventListener('click', (event) => {
-                event.stopPropagation();
-                userMenu.classList.toggle('show');
-            });
-
-            document.addEventListener('click', (event) => {
-                if (!userMenu.contains(event.target) && !userMenuBtn.contains(event.target)) {
-                    userMenu.classList.remove('show');
-                }
-            });
-            
-            // Toggle between Playlist and Radio modes
-            modeBtn.addEventListener('click', () => {
-                userMenu.classList.remove('show');
-                if (radioView.classList.contains('hidden')) {
-                    // Currently in Playlist mode, switch to Radio mode
-                    if (!audio.paused) {
-                        audio.pause();
-                    }
-                    nowPlayingView.classList.add('hidden');
-                    radioView.classList.remove('hidden');
-                    playbackControls.classList.add('hidden');
-                    volumeControls.classList.add('hidden');
-                    progressBarSection.classList.add('hidden');
-                    modeText.textContent = "Modo Lista de Reproducción";
-                    
-                    // Ocultar la lista y el botón de alternar lista en modo radio
-                    playlistView.classList.add('hidden');
-                    togglePlaylistBtn.classList.add('hidden');
-                } else {
-                    // Currently in Radio mode, switch to Playlist mode
-                    nowPlayingView.classList.remove('hidden');
-                    radioView.classList.add('hidden');
-                    playbackControls.classList.remove('hidden');
-                    volumeControls.classList.remove('hidden');
-                    progressBarSection.classList.remove('hidden');
-                    modeText.textContent = "Modo Radio";
-                    
-                    // Mostrar el botón de alternar lista al salir del modo radio
-                    togglePlaylistBtn.classList.remove('hidden');
-                }
-            });
-
-            changePasswordBtn.addEventListener('click', () => {
-                userMenu.classList.remove('show');
-                showPasswordModal();
-            });
-
-            passwordChangeSubmitBtn.addEventListener('click', async () => {
-                const newPassword = newPasswordInput.value;
-                const confirmPassword = confirmPasswordInput.value;
-                passwordChangeMessage.classList.add('hidden');
-
-                if (newPassword !== confirmPassword) {
-                    passwordChangeMessage.textContent = 'Las contraseñas no coinciden.';
-                    passwordChangeMessage.classList.remove('hidden');
-                    return;
-                }
-
-                if (newPassword.length < 6) {
-                    passwordChangeMessage.textContent = 'La contraseña debe tener al menos 6 caracteres.';
-                    passwordChangeMessage.classList.remove('hidden');
-                    return;
-                }
-
-                const user = auth.currentUser;
-                if (user) {
-                    try {
-                        await updatePassword(user, newPassword);
-                        // showMessage('Contraseña actualizada con éxito. Por favor, vuelve a iniciar sesión.');
-                        hidePasswordModal();
-                        signOut(auth);
-                    } catch (error) {
-                        passwordChangeMessage.textContent = 'Error al cambiar la contraseña. Es posible que debas volver a autenticarte.';
-                        console.error("Error changing password:", error);
-                        passwordChangeMessage.classList.remove('hidden');
-                    }
-                } else {
-                    // showMessage('No hay un usuario autenticado. Por favor, inicia sesión para cambiar la contraseña.');
-                    hidePasswordModal();
-                }
-            });
-
-            logoutBtn.addEventListener('click', async () => {
-                try {
-                    await signOut(auth);
-                } catch (error) {
-                    // showMessage("Error al cerrar sesión: " + error.message);
-                }
-            });
-
-            // Toggle playlist visibility
-            togglePlaylistBtn.addEventListener('click', () => {
-                if (playlistView.classList.contains('hidden')) {
-                    playlistView.classList.remove('hidden');
-                    toggleIcon.classList.remove('fa-bars');
-                    toggleIcon.classList.add('fa-arrow-left');
-                } else {
-                    playlistView.classList.add('hidden');
-                    toggleIcon.classList.remove('fa-arrow-left');
-                    toggleIcon.classList.add('fa-bars');
-                }
-            });
-
-            // Search functionality
-            searchInput.addEventListener('input', () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                const filteredSongs = allSongs.filter(song =>
-                    song.title.toLowerCase().includes(searchTerm) ||
-                    song.artist.toLowerCase().includes(searchTerm)
-                );
-                renderMusicList(filteredSongs);
-            });
-
-            // Animation control
-            animationSwitch.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    document.body.classList.remove('no-animations');
-                } else {
-                    document.body.classList.add('no-animations');
-                }
-            });
-
-            // Random background gradient
-            randomBgBtn.addEventListener('click', () => {
-                const newGradient = animatedGradients[Math.floor(Math.random() * animatedGradients.length)];
-                const styleEl = document.createElement('style');
-                styleEl.textContent = `
-                    @keyframes gradient-animation {
-                        0% { background-position: 0% 50%; }
-                        50% { background-position: 100% 50%; }
-                        100% { background-position: 0% 50%; }
-                    }
-                    body::before {
-                        background: ${newGradient};
-                        background-size: 400% 400%;
-                        animation: gradient-animation 20s ease infinite;
-                    }
-                `;
-                document.head.appendChild(styleEl);
-                document.body.classList.remove('no-animations');
-                animationSwitch.checked = true;
-            });
-        };
-        
-        // --- Authentication Logic ---
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loginContainer.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                initMusicApp();
-            } else {
-                loginContainer.classList.remove('hidden');
-                appContainer.classList.add('hidden');
-            }
-        });
-
-        loginBtn.addEventListener('click', async () => {
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-            
-            // Clear any previous messages
-            loginMessage.classList.add('hidden');
-            loginMessage.textContent = '';
-            
-            if (!email) {
-                loginMessage.textContent = "Por favor, ingresa tu correo electrónico.";
-                loginMessage.classList.remove('hidden');
-                return;
-            }
-
-            if (!password) {
-                loginMessage.textContent = "Por favor, ingresa tu contraseña.";
-                loginMessage.classList.remove('hidden');
-                return;
-            }
-
-            // Show loading animation
-            loginBtn.classList.add('loading');
-            
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                const errorCode = error.code;
-                let errorMessage = "Error al iniciar sesión. Por favor, inténtalo de nuevo.";
-                if (errorCode === 'auth/invalid-email') {
-                    errorMessage = "El correo electrónico no es válido.";
-                } else if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
-                    errorMessage = "Correo electrónico o contraseña incorrectos.";
-                }
-                loginMessage.textContent = errorMessage;
-                loginMessage.classList.remove('hidden');
-            } finally {
-                // Hide loading animation
-                loginBtn.classList.remove('loading');
-            }
-        });
-
-        // Toggle password visibility
-        togglePasswordBtn.addEventListener('click', () => {
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
-                passwordIcon.classList.remove('fa-eye');
-                passwordIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = "password";
-                passwordIcon.classList.remove('fa-eye-slash');
-                passwordIcon.classList.add('fa-eye');
-            }
-        });
-
-        // Clear message when user starts typing
-        emailInput.addEventListener('input', () => {
-            loginMessage.classList.add('hidden');
-        });
-        passwordInput.addEventListener('input', () => {
-            loginMessage.classList.add('hidden');
-        });
-    </script>
+    } catch (err) {
+      errorEl.textContent = "❌ Usuario o contraseña incorrectos.";
+      errorEl.style.display = 'block';
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Entrar";
+    }
+  });
+  </script>
+   <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("welcome-form");
+    if (form) form.style.display = "flex";
+  });
+   </script>
 </body>
 </html>

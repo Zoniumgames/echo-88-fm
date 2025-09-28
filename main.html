@@ -196,13 +196,13 @@ backdrop-filter: blur(var(--blur-amount));
   #volume-orb-container:hover .volume-controls-wrapper { opacity: 1; visibility: visible; }
   .volume-controls-wrapper i { color: var(--color-text-secondary); font-size: 1rem; }
 
-  input[type="range"][orient="vertical"] { -webkit-appearance: slider-vertical; writing-mode: bt-lr; width: 5px; height: 120px; padding: 0; }
+  input[type="range"][orient="vertical"] { -webkit-appearance: slider-vertical; writing-mode: bt-lr; width: 20px; height: 120px; padding: 0; }
   input[type="range"] {
     -webkit-appearance: none; appearance: none; height: 4px; background: rgba(255, 255, 255, 0.2);
     cursor: pointer; border-radius: 2px; outline: none; flex-grow: 1;
   }
   input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
+    -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
     background: var(--color-text-primary); border-radius: 50%;
     margin-top: -4px; transition: background 0.2s ease;
   }
@@ -397,6 +397,7 @@ backdrop-filter: blur(var(--blur-amount));
     display: flex;
     padding: 20px;
     flex-shrink: 0; /* Evita que se encoja en pantallas pequeñas */
+    backdrop-filter: blur(var(--blur-amount) );
   }
 
   #radio-view .display-panel-auralink {
@@ -465,7 +466,7 @@ backdrop-filter: blur(var(--blur-amount));
   #radio-view .station-name-auralink {
     font-family: 'Roboto', sans-serif; /* Asegúrate que esta fuente esté cargada */
     font-size: 1.2em;
-    color: #706e6e;
+    color: var(--color-accent-primary);
     text-shadow: 0 0 8px rgba(224, 224, 224, 0.5);
   }
 
@@ -478,8 +479,8 @@ backdrop-filter: blur(var(--blur-amount));
   
   #radio-view .nav-button-auralink {
     background: none;
-    border: 2px solid #555151;
-    color: #706e6e;
+    border: 2px solid var(--color-glass-bg);
+    color: var(--color-text-primary);
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -490,9 +491,9 @@ backdrop-filter: blur(var(--blur-amount));
     align-items: center;
   }
   #radio-view .nav-button-auralink:hover {
-    border-color: #4fc3f7;
-    color: #4fc3f7;
-    box-shadow: 0 0 10px #4fc3f7;
+    border-color: var(--color-accent-primary);
+    color: var(--color-accent-primary);
+    box-shadow: 0 0 10px var(--color-accent-primary);
   }
   #radio-view .nav-button-auralink svg {
     width: 24px;
@@ -514,8 +515,8 @@ backdrop-filter: blur(var(--blur-amount));
     background-color: #2a2a2a;
   }
   #radio-view #powerButtonAuralink.on {
-    border-color: #4fc3f7;
-    color: #4fc3f7;
+    border-color: var(--color-accent-primary);
+    color: var(--color-accent-primary);
   }
   #radio-view #powerButtonAuralink svg {
     width: 40px;
@@ -578,7 +579,7 @@ backdrop-filter: blur(var(--blur-amount));
       width: 100%;
       padding-right: 0;
       border-right: none;
-      border-bottom: 1px solid #555151; /* Borde inferior */
+      border-bottom: 1px solid var(--color-glass-border); /* Borde inferior */
       padding-bottom: 15px;
       margin-bottom: 15px;
     }
@@ -612,6 +613,17 @@ backdrop-filter: blur(var(--blur-amount));
       display: none; /* Ocultar etiqueta de volumen si molesta */
     }
   }
+
+  #radio-view input[type="range"]::-webkit-slider-thumb {
+  background: var(--color-text-secondary); /* Un azul más específico para la radio si lo deseas */
+}
+
+#radio-view input[type="range"]::-moz-range-thumb {
+  background: var(--color-text-secondary);
+}
+
+#radio-view input[type="range"]::-webkit-slider-thumb:hover { background: var(--color-accent-primary); }
+#radio-view input[type="range"]::-moz-range-thumb:hover { background: var(--color-accent-primary); }
 
 </style>
 </head>
@@ -1099,6 +1111,7 @@ modeToggleOption.addEventListener('click', () => {
 </script>
 
 
+  
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";

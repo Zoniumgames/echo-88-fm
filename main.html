@@ -820,6 +820,13 @@ backdrop-filter: blur(var(--blur-amount));
         }
       } catch (err) { console.error(`Error cargando canciones del repo ${repo}:`, err); }
     }
+
+    if (songs.length > 0) {
+      songs.sort((a, b) => {
+        return a.title.localeCompare(b.title); // Ordena alfabéticamente por el título
+      });
+    }
+
     if (songs.length === 0) {
       playlistEl.innerHTML = '<li>No se encontraron canciones.</li>';
     } else {
@@ -1111,7 +1118,6 @@ modeToggleOption.addEventListener('click', () => {
 </script>
 
 
-  
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
@@ -1194,11 +1200,13 @@ modeToggleOption.addEventListener('click', () => {
   }
 
   onAuthStateChanged(auth, async (user) => {
-    const savedToken = localStorage.getItem("auralink-session-token");
-    if (!user || !savedToken) {
-      window.location.href = "index.html";
-      return;
-    }
+    // ...
+    // ⭐ PASO CLAVE: Cargar el perfil del usuario para verificar el rol
+    const profileRef = ref(db, `userProfiles/${user.uid}`); // <-- ¡Asegúrate de que 'db' esté definida aquí!
+    const profileSnapshot = await get(profileRef);
+    // ...
+    const profileRef = ref(db, `userProfiles/${user.uid}`);
+});
 
     const userRef = ref(db, `usuariosConectados/${user.uid}`);
     const snapshot = await get(userRef);
@@ -1217,7 +1225,7 @@ modeToggleOption.addEventListener('click', () => {
     startSessionWatcher(user);
   });
 </script>
-
+  
 <script>
   // ... Tu JavaScript existente de Auralink ...
 
@@ -1341,10 +1349,12 @@ modeToggleOption.addEventListener('click', () => {
       logo: "assets/images/gospel.webp",
       startDate: new Date('2025-06-20T10:00:00'),
       audios: [
-        { url: "", duration: 28800 },
-        { url: "", duration: 28800 },
-        { url: "", duration: 28800 },
-        { url: "", duration: 28800 }
+        { url: "https://github.com/Zoniumgames/gta-radio/releases/download/gospel/gospel.mp3", duration: 7337.376 },
+        { url: "https://github.com/Zoniumgames/gta-radio/releases/download/gospel2/gospel2.mp3", duration: 5231.328 },
+        { url: "https://github.com/Zoniumgames/gta-radio/releases/download/gospel3/gospel3.mp3", duration: 7206.144 },
+        { url: "https://github.com/Zoniumgames/gta-radio/releases/download/gospel4/gospel4.mp3", duration: 3616.728 },
+        { url: "https://github.com/Zoniumgames/gta-radio/releases/download/gospel5/gospel5.mp3", duration: 4499.16 },
+        { url: "https://github.com/Zoniumgames/gta-radio/releases/download/gospel6/gospel6.mp3", duration: 7116.792 }
       ]
     },
     {

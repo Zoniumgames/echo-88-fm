@@ -820,13 +820,6 @@ backdrop-filter: blur(var(--blur-amount));
         }
       } catch (err) { console.error(`Error cargando canciones del repo ${repo}:`, err); }
     }
-
-    if (songs.length > 0) {
-      songs.sort((a, b) => {
-        return a.title.localeCompare(b.title); // Ordena alfabéticamente por el título
-      });
-    }
-
     if (songs.length === 0) {
       playlistEl.innerHTML = '<li>No se encontraron canciones.</li>';
     } else {
@@ -1118,6 +1111,7 @@ modeToggleOption.addEventListener('click', () => {
 </script>
 
 
+  
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
@@ -1200,13 +1194,11 @@ modeToggleOption.addEventListener('click', () => {
   }
 
   onAuthStateChanged(auth, async (user) => {
-    // ...
-    // ⭐ PASO CLAVE: Cargar el perfil del usuario para verificar el rol
-    const profileRef = ref(db, `userProfiles/${user.uid}`); // <-- ¡Asegúrate de que 'db' esté definida aquí!
-    const profileSnapshot = await get(profileRef);
-    // ...
-    const profileRef = ref(db, `userProfiles/${user.uid}`);
-});
+    const savedToken = localStorage.getItem("auralink-session-token");
+    if (!user || !savedToken) {
+      window.location.href = "index.html";
+      return;
+    }
 
     const userRef = ref(db, `usuariosConectados/${user.uid}`);
     const snapshot = await get(userRef);
@@ -1225,7 +1217,7 @@ modeToggleOption.addEventListener('click', () => {
     startSessionWatcher(user);
   });
 </script>
-  
+
 <script>
   // ... Tu JavaScript existente de Auralink ...
 

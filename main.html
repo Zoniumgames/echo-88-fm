@@ -464,7 +464,7 @@ backdrop-filter: blur(var(--blur-amount));
   }
   
   #radio-view .station-name-auralink {
-    font-family: 'Roboto', sans-serif; /* Asegúrate que esta fuente esté cargada */
+    font-family: 'Roboto', sans-serif; /* fuentes de ortiz */
     font-size: 1.2em;
     color: var(--color-accent-primary);
     text-shadow: 0 0 8px rgba(224, 224, 224, 0.5);
@@ -542,7 +542,7 @@ backdrop-filter: blur(var(--blur-amount));
     gap: 15px;
   }
 
-  #radio-view input[type="range"] { /* Este selector es más específico si tuvieras otros ranges */
+  #radio-view input[type="range"] { /* nose que hice aqui */
     -webkit-appearance: none; appearance: none;
     width: 150px;
     height: 4px;
@@ -566,7 +566,7 @@ backdrop-filter: blur(var(--blur-amount));
   }
 
   /* Estilos responsivos para la radio dentro de Auralink */
-  @media (max-width: 900px) { /* Ajusta este breakpoint si es necesario */
+  @media (max-width: 900px) { /* Ajustar este breakpoint si es necesario */
     #radio-view .radio-container-auralink {
       width: 95%; /* Ocupa más ancho en pantallas pequeñas */
       height: auto; /* Altura automática */
@@ -603,7 +603,7 @@ backdrop-filter: blur(var(--blur-amount));
     }
 
     #radio-view .volume-control-auralink input[type="range"] {
-      width: 100px; /* Más corto */
+      width: 100px;
       height: 3px;
     }
     #radio-view .volume-control-auralink {
@@ -615,7 +615,7 @@ backdrop-filter: blur(var(--blur-amount));
   }
 
   #radio-view input[type="range"]::-webkit-slider-thumb {
-  background: var(--color-text-secondary); /* Un azul más específico para la radio si lo deseas */
+  background: var(--color-text-secondary); /*  azul para la radio  */
 }
 
 #radio-view input[type="range"]::-moz-range-thumb {
@@ -667,8 +667,8 @@ backdrop-filter: blur(var(--blur-amount));
 </div>
 
   <div id="radio-view" style="display: none;">
-  <!-- Aquí irá el HTML de la radio -->
-  <div class="radio-container-auralink"> <!-- Le cambiamos el nombre para evitar conflictos -->
+  <!-- HTML de la radio -->
+  <div class="radio-container-auralink"> <!-- evitar conflictos -->
     <div class="display-panel-auralink">
       <div class="station-display-auralink">
         <div class="station-list-auralink" id="stationListAuralink">
@@ -1219,7 +1219,7 @@ modeToggleOption.addEventListener('click', () => {
 </script>
 
 <script>
-  // ... Tu JavaScript existente de Auralink ...
+  // JavaScript de Auralink ...
 
   // =========================================
   // SCRIPT ESPECÍFICO PARA LA RADIO DE AURALINK
@@ -1496,11 +1496,7 @@ modeToggleOption.addEventListener('click', () => {
     console.log("🎵 Radio Auralink inicializada.");
   }
 
-  // Asegúrate de que initializeRadioAuralink se llame solo cuando el modo radio se activa
-  // Modifica la función 'modeToggleOption' en tu script principal para llamarla:
-  // (Búscalo en el final de tu script existente)
   
-  // Asegúrate de que las imágenes de 'assets/images/' existan en tu proyecto.
 </script>
 
 </body>

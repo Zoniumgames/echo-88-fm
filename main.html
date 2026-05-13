@@ -952,8 +952,7 @@ renderPlaylist(filtered);
 
 
   const BIN_ID_DATA = '684ce02a8561e97a5023f0e8';
-  const API_KEY = '$2a$10$rOYhULeCIqQqevfSQljVuuaE8F1ckttBnNVRqRJ7sdT4IS8.J.zF.';
-  const headers = { 'X-Master-Key': API_KEY, 'Content-Type': 'application/json' };
+  
   
   
 
@@ -969,9 +968,7 @@ renderPlaylist(filtered);
   
   async function loadExternalUIData() {
     try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID_DATA}/latest`, {
-        headers: { 'X-Master-Key': API_KEY }
-      });
+      const res = await fetch('https://secureservices.geovanny-ramos-4444.workers.dev');
       const data = await res.json();
       const record = data.record;
       const recentBox = document.getElementById('recent-box');
